@@ -9,8 +9,8 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  ToggleLeftIcon,
-  ToggleRightIcon
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline'
 
 const AlertasAdmin = () => {
@@ -245,9 +245,9 @@ const AlertasAdmin = () => {
                       title={alerta.activa ? 'Desactivar' : 'Activar'}
                     >
                       {alerta.activa ? (
-                        <ToggleRightIcon className="h-5 w-5 text-green-600" />
+                        <ChevronRightIcon className="h-5 w-5 text-green-600" />
                       ) : (
-                        <ToggleLeftIcon className="h-5 w-5 text-neutral-400" />
+                        <ChevronLeftIcon className="h-5 w-5 text-neutral-400" />
                       )}
                     </motion.button>
                     

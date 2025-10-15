@@ -235,19 +235,26 @@ npm run test:ui      # Tests con UI
 
 ## 🚀 Despliegue
 
-### Railway (Recomendado)
-El proyecto está configurado para deploy automático en Railway:
+### Vercel (Recomendado)
+El proyecto está configurado para deploy automático en Vercel:
 
-1. **Conecta tu repositorio de GitHub a Railway**
-2. **Railway detectará automáticamente la configuración**
+1. **Conecta tu repositorio de GitHub a Vercel**
+2. **Vercel detectará automáticamente la configuración**
 3. **El deploy se realizará automáticamente en cada push**
 
 **URL del proyecto**: [https://github.com/JuanPablitoxxz/RestauranteLaChinga.git](https://github.com/JuanPablitoxxz/RestauranteLaChinga.git)
 
-### Vercel
+#### Deploy manual con Vercel CLI:
 ```bash
 npm install -g vercel
 vercel --prod
+```
+
+### Railway
+```bash
+# Configurado para Railway también
+npm run build
+npm start
 ```
 
 ### Netlify
