@@ -10,7 +10,8 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
-  BellIcon
+  BellIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -270,7 +271,7 @@ const DashboardAdmin = () => {
                   {kpi.total && (
                     <div className="w-full bg-neutral-200 rounded-full h-1 mt-2">
                       <div 
-                        className="bg-primary-600 h-1 rounded-full" 
+                        className="bg-mexico-rojo-600 h-1 rounded-full" 
                         style={{ width: `${(kpi.valor / kpi.total) * 100}%` }}
                       ></div>
                     </div>
@@ -425,7 +426,7 @@ const DashboardAdmin = () => {
               detalle: 'Mesa 12 ahora disponible', 
               tiempo: 'Hace 30 minutos',
               icono: UserGroupIcon,
-              color: 'text-primary-600'
+              color: 'text-mexico-rojo-600'
             }
           ].map((actividad, index) => {
             const IconoActividad = actividad.icono

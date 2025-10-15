@@ -33,7 +33,7 @@ import ReportesCajero from './pages/cajero/Reportes'
 import ReservasCajero from './pages/cajero/Reservas'
 
 // Páginas de admin
-import DashboardAdmin from './pages/admin/Dashboard'
+import DashboardAdmin from './pages/admin/DashboardSimple'
 import UsuariosAdmin from './pages/admin/Usuarios'
 import MesasAdmin from './pages/admin/Mesas'
 import CartasAdmin from './pages/admin/Cartas'
