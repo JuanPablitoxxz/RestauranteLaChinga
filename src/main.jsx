@@ -8,8 +8,9 @@ import './index.css'
 
 // Configurar MSW para desarrollo
 if (import.meta.env.DEV) {
-  const { worker } = await import('./mocks/browser')
-  worker.start()
+  import('./mocks/browser').then(({ worker }) => {
+    worker.start()
+  })
 }
 
 const queryClient = new QueryClient({
