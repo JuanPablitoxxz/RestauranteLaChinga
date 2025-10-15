@@ -15,7 +15,7 @@ const LayoutAdmin = ({ children }) => {
   ]
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-gradient-to-br from-mexico-verde-50 to-mexico-dorado-50">
       <NavBar 
         onToggleSidebar={() => setSidebarAbierto(!sidebarAbierto)}
         sidebarAbierto={sidebarAbierto}

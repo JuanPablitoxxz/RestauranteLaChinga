@@ -8,9 +8,8 @@
   }
   
   body {
-    @apply bg-gradient-to-br from-mexico-verde-50 to-mexico-dorado-50 text-neutral-800 font-sans;
+    @apply bg-neutral-50 text-neutral-800 font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background-attachment: fixed;
   }
   
   html {

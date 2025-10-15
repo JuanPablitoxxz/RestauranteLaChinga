@@ -80,7 +80,7 @@ const RedireccionarPorRol = () => {
 
 function App() {
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen">
       <AnimatePresence mode="wait">
         <Routes>
           {/* Rutas públicas */}
