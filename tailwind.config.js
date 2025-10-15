@@ -7,29 +7,81 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Colores de la bandera mexicana
+        mexico: {
+          verde: {
+            50: '#f0f9f0',
+            100: '#dcf2dc',
+            200: '#bce5bc',
+            300: '#8dd18d',
+            400: '#5bb85b',
+            500: '#228B22', // Verde bandera principal
+            600: '#1e7a1e',
+            700: '#1a691a',
+            800: '#165816',
+            900: '#0f3f0f',
+          },
+          rojo: {
+            50: '#fef2f2',
+            100: '#fee2e2',
+            200: '#fecaca',
+            300: '#fca5a5',
+            400: '#f87171',
+            500: '#DC143C', // Rojo bandera principal
+            600: '#c61236',
+            700: '#b01030',
+            800: '#9a0e2a',
+            900: '#7e0b22',
+          },
+          dorado: {
+            50: '#fffbeb',
+            100: '#fef3c7',
+            200: '#fde68a',
+            300: '#fcd34d',
+            400: '#fbbf24',
+            500: '#FFD700', // Dorado mexicano
+            600: '#d4af00',
+            700: '#b89400',
+            800: '#9c7a00',
+            900: '#7d5f00',
+          },
+          tierra: {
+            50: '#faf7f5',
+            100: '#f3ede8',
+            200: '#e6d9d0',
+            300: '#d4c0b1',
+            400: '#c1a68f',
+            500: '#8B4513', // Tierra mexicana
+            600: '#7a3d11',
+            700: '#69350f',
+            800: '#582d0d',
+            900: '#47240a',
+          }
+        },
+        // Mantener compatibilidad con nombres anteriores
         primary: {
-          50: '#ffebee',
-          100: '#ffcdd2',
-          200: '#ef9a9a',
-          300: '#e57373',
-          400: '#ef5350',
-          500: '#f44336',
-          600: '#e53935',
-          700: '#d32f2f',
-          800: '#c62828',
-          900: '#b71c1c',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#DC143C',
+          600: '#c61236',
+          700: '#b01030',
+          800: '#9a0e2a',
+          900: '#7e0b22',
         },
         success: {
-          50: '#e8f5e8',
-          100: '#c8e6c9',
-          200: '#a5d6a7',
-          300: '#81c784',
-          400: '#66bb6a',
-          500: '#4caf50',
-          600: '#43a047',
-          700: '#388e3c',
-          800: '#2e7d32',
-          900: '#1b5e20',
+          50: '#f0f9f0',
+          100: '#dcf2dc',
+          200: '#bce5bc',
+          300: '#8dd18d',
+          400: '#5bb85b',
+          500: '#228B22',
+          600: '#1e7a1e',
+          700: '#1a691a',
+          800: '#165816',
+          900: '#0f3f0f',
         },
         neutral: {
           50: '#fafafa',
@@ -46,6 +98,8 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
+        mexico: ['Cinzel', 'Playfair Display', 'serif'],
+        display: ['Cinzel Decorative', 'Cinzel', 'serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

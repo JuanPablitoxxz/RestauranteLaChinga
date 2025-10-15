@@ -20,11 +20,11 @@ const NavBar = ({ onToggleSidebar, sidebarAbierto }) => {
 
   const obtenerColorRol = (rol) => {
     const colores = {
-      cliente: 'bg-blue-100 text-blue-800',
-      mesero: 'bg-green-100 text-green-800',
-      cajero: 'bg-yellow-100 text-yellow-800',
-      admin: 'bg-purple-100 text-purple-800',
-      cocina: 'bg-orange-100 text-orange-800'
+      cliente: 'bg-mexico-verde-100 text-mexico-verde-800 border border-mexico-verde-200',
+      mesero: 'bg-mexico-dorado-100 text-mexico-dorado-800 border border-mexico-dorado-200',
+      cajero: 'bg-mexico-tierra-100 text-mexico-tierra-800 border border-mexico-tierra-200',
+      admin: 'bg-mexico-rojo-100 text-mexico-rojo-800 border border-mexico-rojo-200',
+      cocina: 'bg-mexico-verde-200 text-mexico-verde-900 border border-mexico-verde-300'
     }
     return colores[rol] || 'bg-neutral-100 text-neutral-800'
   }
@@ -54,11 +54,12 @@ const NavBar = ({ onToggleSidebar, sidebarAbierto }) => {
             </button>
             
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-800 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">LC</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-mexico-rojo-500 to-mexico-verde-500 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm font-mexico">🇲🇽</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-primary-800">La Chinga</h1>
+                <h1 className="text-2xl font-bold text-mexico-rojo-600 font-mexico">La Chinga</h1>
+                <span className="text-sm text-mexico-tierra-600 font-medium">Restaurante Mexicano</span>
                 <p className="text-xs text-neutral-500">Restaurante</p>
               </div>
             </div>

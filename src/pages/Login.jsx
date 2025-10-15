@@ -81,9 +81,9 @@ const Login = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-3xl font-bold text-primary-800"
+            className="text-4xl font-bold text-mexico-rojo-600 font-mexico"
           >
-            La Chinga
+            🇲🇽 La Chinga
           </motion.h2>
           
           <motion.p
@@ -239,7 +239,7 @@ const Login = () => {
           transition={{ delay: 0.6 }}
           className="text-center text-sm text-neutral-500"
         >
-          <p>© 2024 La Chinga Restaurant. Todos los derechos reservados.</p>
+          <p>© 2024 La Chinga - Restaurante Mexicano. Todos los derechos reservados.</p>
         </motion.div>
       </motion.div>
     </div>

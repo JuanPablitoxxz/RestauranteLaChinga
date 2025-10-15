@@ -8,8 +8,9 @@
   }
   
   body {
-    @apply bg-neutral-50 text-neutral-800 font-sans;
+    @apply bg-gradient-to-br from-mexico-verde-50 to-mexico-dorado-50 text-neutral-800 font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-attachment: fixed;
   }
   
   html {
@@ -19,15 +20,15 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-800 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-mexico-rojo-500 hover:bg-mexico-rojo-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-mexico-rojo-300 focus:ring-offset-2 shadow-lg;
   }
   
   .btn-secondary {
-    @apply bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:ring-offset-2;
+    @apply bg-mexico-tierra-200 hover:bg-mexico-tierra-300 text-mexico-tierra-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-mexico-tierra-500 focus:ring-offset-2;
   }
   
   .btn-success {
-    @apply bg-success-800 hover:bg-success-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2;
+    @apply bg-mexico-verde-500 hover:bg-mexico-verde-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-mexico-verde-300 focus:ring-offset-2 shadow-lg;
   }
   
   .btn-danger {
@@ -35,11 +36,11 @@
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-neutral-200 p-6 transition-all duration-200 hover:shadow-md;
+    @apply bg-white rounded-xl shadow-lg border border-mexico-dorado-200 p-6 transition-all duration-200 hover:shadow-xl hover:border-mexico-dorado-300;
   }
   
   .input-field {
-    @apply w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-3 py-2 border border-mexico-tierra-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mexico-rojo-500 focus:border-transparent transition-all duration-200;
   }
   
   .table-header {
@@ -51,27 +52,27 @@
   }
   
   .status-libre {
-    @apply bg-success-100 text-success-800;
+    @apply bg-mexico-verde-100 text-mexico-verde-800 border border-mexico-verde-200;
   }
   
   .status-ocupada {
-    @apply bg-primary-100 text-primary-800;
+    @apply bg-mexico-rojo-100 text-mexico-rojo-800 border border-mexico-rojo-200;
   }
   
   .status-pendiente {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-mexico-dorado-100 text-mexico-dorado-800 border border-mexico-dorado-200;
   }
   
   .status-cobrado {
-    @apply bg-neutral-100 text-neutral-800;
+    @apply bg-mexico-tierra-100 text-mexico-tierra-800 border border-mexico-tierra-200;
   }
   
   .sidebar-link {
-    @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-neutral-100 hover:text-primary-800;
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-mexico-dorado-100 hover:text-mexico-rojo-800;
   }
   
   .sidebar-link.active {
-    @apply bg-primary-100 text-primary-800;
+    @apply bg-mexico-rojo-100 text-mexico-rojo-800 border-l-4 border-mexico-rojo-500;
   }
   
   .loading-skeleton {
