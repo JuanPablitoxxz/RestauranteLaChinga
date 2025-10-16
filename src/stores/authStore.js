@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { auth, supabase } from '../lib/supabase'
 
 export const useAuthStore = create(
   persist(
@@ -17,38 +18,65 @@ export const useAuthStore = create(
         set({ isLoading: true })
         
         try {
-          // Simular llamada a API
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          // Autenticación con Supabase
+          const { data, error } = await auth.signIn(email, password)
           
-          // Datos mock del usuario
-          const usuarioMock = {
-            id: 1,
-            email,
-            nombre: email.split('@')[0],
-            rol,
-            turno: rol === 'cliente' ? null : (rol === 'mesero' || rol === 'cajero' ? 'mañana' : null),
-            mesasAsignadas: rol === 'mesero' ? [1, 2, 3] : [],
-            avatar: `https://ui-avatars.com/api/?name=${email.split('@')[0]}&background=c62828&color=fff`
+          if (error) {
+            set({ isLoading: false })
+            return { success: false, error: error.message }
           }
 
-          const token = `mock-token-${Date.now()}`
+          // Obtener datos del usuario desde la base de datos
+          const { data: usuarioData, error: userError } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('email', email)
+            .single()
+
+          if (userError || !usuarioData) {
+            set({ isLoading: false })
+            return { success: false, error: 'Usuario no encontrado' }
+          }
+
+          // Verificar que el rol coincida
+          if (usuarioData.rol !== rol) {
+            set({ isLoading: false })
+            return { success: false, error: 'Rol incorrecto' }
+          }
+
+          const usuario = {
+            id: usuarioData.id,
+            email: usuarioData.email,
+            nombre: usuarioData.nombre,
+            apellido: usuarioData.apellido,
+            rol: usuarioData.rol,
+            turno: usuarioData.turno,
+            activo: usuarioData.activo,
+            avatar: `https://ui-avatars.com/api/?name=${usuarioData.nombre}&background=c62828&color=fff`
+          }
           
           set({
-            usuario: usuarioMock,
-            token,
-            rol,
+            usuario,
+            token: data.session?.access_token,
+            rol: usuarioData.rol,
             isAuthenticated: true,
             isLoading: false
           })
 
-          return { success: true, usuario: usuarioMock }
+          return { success: true, usuario }
         } catch (error) {
           set({ isLoading: false })
           return { success: false, error: error.message }
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await auth.signOut()
+        } catch (error) {
+          console.error('Error al cerrar sesión:', error)
+        }
+        
         set({
           usuario: null,
           token: null,

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import SupabaseTest from '../../components/SupabaseTest'
 
 const DashboardAdminSimple = () => {
   return (
@@ -101,6 +102,9 @@ const DashboardAdminSimple = () => {
           ))}
         </div>
       </div>
+
+      {/* Prueba de conexión Supabase */}
+      <SupabaseTest />
     </motion.div>
   )
 }
