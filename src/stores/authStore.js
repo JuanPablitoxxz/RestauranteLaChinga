@@ -33,9 +33,15 @@ export const useAuthStore = create(
             .eq('email', email)
             .single()
 
-          if (userError || !usuarioData) {
+          if (userError) {
+            console.error('Error al buscar usuario:', userError)
             set({ isLoading: false })
-            return { success: false, error: 'Usuario no encontrado' }
+            return { success: false, error: 'Error al buscar usuario en la base de datos' }
+          }
+
+          if (!usuarioData) {
+            set({ isLoading: false })
+            return { success: false, error: 'Usuario no encontrado en la base de datos. Contacta al administrador.' }
           }
 
           // Verificar que el rol coincida
