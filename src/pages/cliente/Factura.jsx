@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { 
   DocumentTextIcon,
   PrinterIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   ShareIcon,
   CheckCircleIcon,
   ClockIcon,
@@ -270,7 +270,7 @@ const Factura = () => {
             </>
           ) : (
             <>
-              <DownloadIcon className="h-4 w-4" />
+              <ArrowDownTrayIcon className="h-4 w-4" />
               <span>Descargar PDF</span>
             </>
           )}
