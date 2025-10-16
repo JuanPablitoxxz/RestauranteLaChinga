@@ -35,13 +35,20 @@ export const useAuthStore = create(
 
           if (userError) {
             console.error('Error al buscar usuario:', userError)
+            console.error('Detalles del error:', {
+              message: userError.message,
+              details: userError.details,
+              hint: userError.hint,
+              code: userError.code
+            })
             set({ isLoading: false })
-            return { success: false, error: 'Error al buscar usuario en la base de datos' }
+            return { success: false, error: `Error al buscar usuario: ${userError.message}` }
           }
 
           if (!usuarioData) {
+            console.error('Usuario no encontrado:', email)
             set({ isLoading: false })
-            return { success: false, error: 'Usuario no encontrado en la base de datos. Contacta al administrador.' }
+            return { success: false, error: 'Usuario no encontrado en la base de datos. Verifica que el usuario esté creado en Supabase.' }
           }
 
           // Verificar que el rol coincida
