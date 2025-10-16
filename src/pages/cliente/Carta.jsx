@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
-import { useCarritoStore } from '../../stores/carritoStoreSimple'
+import { useCarrito } from '../../contexts/CarritoContext'
 
 const CartaCliente = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('todas')
@@ -22,7 +22,7 @@ const CartaCliente = () => {
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false)
   const navigate = useNavigate()
   
-  // Store global del carrito
+  // Context del carrito
   const { 
     items: carrito, 
     agregarItem, 
@@ -30,7 +30,7 @@ const CartaCliente = () => {
     getCantidadItem, 
     getTotalItems, 
     getTotalPrecio 
-  } = useCarritoStore()
+  } = useCarrito()
   
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()

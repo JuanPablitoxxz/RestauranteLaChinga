@@ -13,12 +13,12 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-import { useCarritoStore } from '../../stores/carritoStoreSimple'
+import { useCarrito } from '../../contexts/CarritoContext'
 
 const MiPedido = () => {
   const navigate = useNavigate()
   
-  // Store global del carrito
+  // Context del carrito
   const { 
     items: carrito, 
     actualizarCantidad, 
@@ -26,7 +26,7 @@ const MiPedido = () => {
     setObservaciones, 
     observaciones,
     getTotalPrecio 
-  } = useCarritoStore()
+  } = useCarrito()
 
   // Si el carrito está vacío, mostrar mensaje
   if (carrito.length === 0) {

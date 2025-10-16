@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { CarritoProvider } from './contexts/CarritoContext'
 
 // Layouts
 import LayoutPublico from './layouts/LayoutPublico'
@@ -85,8 +86,9 @@ const RedireccionarPorRol = () => {
 
 function App() {
   return (
-    <div className="min-h-screen">
-      <AnimatePresence mode="wait">
+    <CarritoProvider>
+      <div className="min-h-screen">
+        <AnimatePresence mode="wait">
         <Routes>
           {/* Rutas públicas */}
           <Route path="/login" element={
@@ -206,6 +208,7 @@ function App() {
         </Routes>
       </AnimatePresence>
     </div>
+    </CarritoProvider>
   )
 }
 

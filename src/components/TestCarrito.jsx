@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useCarritoStore } from '../stores/carritoStoreSimple'
+import { useCarrito } from '../contexts/CarritoContext'
 import toast from 'react-hot-toast'
 
 const TestCarrito = () => {
@@ -9,7 +9,7 @@ const TestCarrito = () => {
     getTotalItems, 
     getTotalPrecio,
     limpiarCarrito 
-  } = useCarritoStore()
+  } = useCarrito()
 
   const platoTest = {
     id: 999,
