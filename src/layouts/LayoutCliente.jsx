@@ -7,10 +7,9 @@ const LayoutCliente = ({ children }) => {
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
 
   const menuItems = [
+    { path: '/cliente/dashboard', label: 'Inicio', icon: '🏠' },
     { path: '/cliente/carta', label: 'Carta', icon: '🍽️' },
-    { path: '/cliente/mesa', label: 'Mi Mesa', icon: '🪑' },
     { path: '/cliente/pedido', label: 'Mi Pedido', icon: '🛒' },
-    { path: '/cliente/reserva', label: 'Reservas', icon: '📅' },
     { path: '/cliente/factura', label: 'Factura', icon: '🧾' }
   ]
 

@@ -7,15 +7,21 @@ import {
   MinusIcon,
   BellIcon,
   ChatBubbleLeftRightIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  ClockIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { useMenuDinamico } from '../../hooks/useMenuDinamico'
 
 const CartaCliente = () => {
   const [carrito, setCarrito] = useState([])
   const [filtroCategoria, setFiltroCategoria] = useState('todas')
   const [busqueda, setBusqueda] = useState('')
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false)
+  
+  // Hook para menús dinámicos
+  const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()
 
   // Datos mock de platos
   const platosMock = [
@@ -108,10 +114,12 @@ const CartaCliente = () => {
   ]
 
   const platosFiltrados = platos?.filter(plato => {
+    // Filtrar por menú actual si está disponible
+    const coincideMenu = !menuActual || plato.categoria === menuActual
     const coincideCategoria = filtroCategoria === 'todas' || plato.categoria === filtroCategoria
     const coincideBusqueda = plato.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
                             plato.descripcion.toLowerCase().includes(busqueda.toLowerCase())
-    return coincideCategoria && coincideBusqueda && plato.disponible
+    return coincideMenu && coincideCategoria && coincideBusqueda && plato.disponible
   }) || []
 
   const agregarAlCarrito = (plato) => {
@@ -185,6 +193,39 @@ const CartaCliente = () => {
         <p className="text-neutral-600">
           Descubre los sabores auténticos de México
         </p>
+        
+        {/* Información del menú actual */}
+        <div className="mt-4">
+          {esHorarioValido ? (
+            <div className="bg-mexico-verde-50 border border-mexico-verde-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <ClockIcon className="h-5 w-5 text-mexico-verde-600" />
+                <div>
+                  <p className="text-sm font-medium text-mexico-verde-800">
+                    Menú actual: {obtenerNombreMenu(menuActual)}
+                  </p>
+                  <p className="text-xs text-mexico-verde-700">
+                    Hora: {horaActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-800">
+                    Fuera del horario de servicio
+                  </p>
+                  <p className="text-xs text-yellow-700">
+                    Próximo menú: {obtenerProximoMenu().menu} a las {obtenerProximoMenu().hora}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Filtros y Búsqueda */}

@@ -33,6 +33,8 @@ import ReportesCajero from './pages/cajero/Reportes'
 import ReservasCajero from './pages/cajero/Reservas'
 
 // Páginas de cliente
+import DashboardCliente from './pages/cliente/Dashboard'
+import CartaCliente from './pages/cliente/Carta'
 import MiPedido from './pages/cliente/MiPedido'
 import Factura from './pages/cliente/Factura'
 
@@ -151,10 +153,11 @@ function App() {
             <RutaProtegida rolesPermitidos={['cliente']}>
               <LayoutCliente>
                 <Routes>
+                  <Route path="dashboard" element={<DashboardCliente />} />
                   <Route path="carta" element={<CartaCliente />} />
                   <Route path="pedido" element={<MiPedido />} />
                   <Route path="factura" element={<Factura />} />
-                  <Route path="*" element={<Navigate to="/cliente/carta" replace />} />
+                  <Route path="*" element={<Navigate to="/cliente/dashboard" replace />} />
                 </Routes>
               </LayoutCliente>
             </RutaProtegida>
