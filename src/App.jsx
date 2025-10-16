@@ -34,7 +34,6 @@ import ReservasCajero from './pages/cajero/Reservas'
 
 // Páginas de cliente
 import DashboardCliente from './pages/cliente/Dashboard'
-import CartaCliente from './pages/cliente/Carta'
 import MiPedido from './pages/cliente/MiPedido'
 import Factura from './pages/cliente/Factura'
 
