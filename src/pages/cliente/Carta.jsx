@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
-import { useCarrito } from '../../contexts/CarritoContext'
+import { useCarrito } from '../../components/CarritoSimple'
 
 const CartaCliente = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('todas')

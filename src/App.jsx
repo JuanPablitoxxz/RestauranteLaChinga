@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CarritoProvider } from './contexts/CarritoContext'
+import { CarritoProvider } from './components/CarritoSimple'
 
 // Layouts
 import LayoutPublico from './layouts/LayoutPublico'
