@@ -55,7 +55,10 @@ const DashboardCliente = () => {
       descripcion: 'Revisa tu pedido actual',
       icono: ClockIcon,
       color: 'mexico-dorado',
-      accion: () => navigate('/cliente/pedido'),
+      accion: () => {
+        console.log('🚀 Dashboard - Navegando a Mi Pedido')
+        navigate('/cliente/pedido')
+      },
       disponible: true
     },
     {

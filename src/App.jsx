@@ -112,7 +112,7 @@ function App() {
                 <Routes>
                   <Route path="carta" element={<CartaCliente />} />
                   <Route path="mesa" element={<MesaCliente />} />
-                  <Route path="pedido" element={<PedidoCliente />} />
+                  <Route path="pedido" element={<MiPedido />} />
                   <Route path="reserva" element={<ReservaCliente />} />
                   <Route path="factura" element={<FacturaCliente />} />
                   <Route path="*" element={<Navigate to="/cliente/carta" replace />} />

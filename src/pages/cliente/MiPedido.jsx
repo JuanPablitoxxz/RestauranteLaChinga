@@ -16,7 +16,8 @@ import toast from 'react-hot-toast'
 import { useCarrito } from '../../components/CarritoSimple'
 
 const MiPedido = () => {
-  console.log('🎯 MiPedido - COMPONENTE INICIADO')
+  console.log('🎯🎯🎯 MiPedido - COMPONENTE INICIADO 🎯🎯🎯')
+  console.log('🎯 MiPedido - URL actual:', window.location.pathname)
   const navigate = useNavigate()
   
   console.log('🎯 MiPedido - Antes de useCarrito')
