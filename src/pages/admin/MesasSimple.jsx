@@ -8,11 +8,17 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   XCircleIcon,
-  MapPinIcon
+  MapPinIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
+import MesaDetalleCorregido from '../../components/MesaDetalleCorregido'
+import GestionRapidaMesas from '../../components/GestionRapidaMesas'
 
 const MesasAdminSimple = () => {
   const [filtro, setFiltro] = useState('todas')
+  const [mesaSeleccionada, setMesaSeleccionada] = useState(null)
+  const [mostrarDetalle, setMostrarDetalle] = useState(false)
+  const [mostrarGestionRapida, setMostrarGestionRapida] = useState(false)
 
   // Obtener mesas
   const { data: mesas, isLoading: isLoadingMesas } = useQuery({
@@ -104,6 +110,19 @@ const MesasAdminSimple = () => {
         <p className="text-neutral-600">
           Administra las 24 mesas del restaurante y asigna meseros
         </p>
+        
+        {/* Botón de gestión rápida */}
+        <div className="mt-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setMostrarGestionRapida(!mostrarGestionRapida)}
+            className="btn-success flex items-center space-x-2"
+          >
+            <CheckCircleIcon className="h-4 w-4" />
+            <span>{mostrarGestionRapida ? 'Ocultar' : 'Mostrar'} Gestión Rápida</span>
+          </motion.button>
+        </div>
       </motion.div>
 
       {/* Filtros */}
@@ -134,6 +153,30 @@ const MesasAdminSimple = () => {
           ))}
         </div>
       </motion.div>
+
+      {/* Gestión Rápida */}
+      {mostrarGestionRapida && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <h3 className="text-lg font-medium text-neutral-800 mb-4">Gestión Rápida de Mesas</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {mesasFiltradas.slice(0, 6).map(mesa => (
+              <GestionRapidaMesas
+                key={mesa.id}
+                mesa={mesa}
+                onMesaActualizada={(mesaActualizada) => {
+                  // Aquí se actualizaría la mesa en la base de datos
+                  console.log('Mesa actualizada:', mesaActualizada)
+                }}
+                meserosDisponibles={meseros}
+              />
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Grid de Mesas */}
       <motion.div
@@ -191,6 +234,20 @@ const MesasAdminSimple = () => {
                     {mesero.nombre}
                   </div>
                 )}
+              </div>
+
+              {/* Botón de ver detalles */}
+              <div className="mt-3 pt-3 border-t border-neutral-200">
+                <button
+                  onClick={() => {
+                    setMesaSeleccionada(mesa)
+                    setMostrarDetalle(true)
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 text-xs text-neutral-600 hover:text-mexico-rojo-600 transition-colors"
+                >
+                  <EyeIcon className="h-4 w-4" />
+                  <span>Ver Detalles</span>
+                </button>
               </div>
 
               {/* Indicador de prioridad */}
@@ -256,6 +313,21 @@ const MesasAdminSimple = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Modal de Detalle de Mesa */}
+      <MesaDetalleCorregido
+        mesa={mesaSeleccionada}
+        isOpen={mostrarDetalle}
+        onClose={() => {
+          setMostrarDetalle(false)
+          setMesaSeleccionada(null)
+        }}
+        onMesaActualizada={(datosActualizados) => {
+          // Aquí se actualizaría la mesa en la base de datos
+          console.log('Mesa actualizada:', datosActualizados)
+        }}
+        meserosDisponibles={meseros}
+      />
     </div>
   )
 }
