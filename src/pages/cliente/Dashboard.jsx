@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import InfoMesaCliente from '../../components/InfoMesaCliente'
 import CarritoDemo from '../../components/CarritoDemo'
+import TestCarrito from '../../components/TestCarrito'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
 
 const DashboardCliente = () => {
@@ -82,6 +83,9 @@ const DashboardCliente = () => {
         </p>
       </motion.div>
 
+      {/* Test del carrito */}
+      <TestCarrito />
+      
       {/* Datos de prueba */}
       <CarritoDemo />
 

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useCarritoStore } from '../stores/carritoStore'
+import { useCarritoStore } from '../stores/carritoStoreSimple'
 import toast from 'react-hot-toast'
 
 const CarritoDemo = () => {

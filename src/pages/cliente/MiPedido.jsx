@@ -13,7 +13,7 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-import { useCarritoStore } from '../../stores/carritoStore'
+import { useCarritoStore } from '../../stores/carritoStoreSimple'
 
 const MiPedido = () => {
   const navigate = useNavigate()
