@@ -16,8 +16,10 @@ import toast from 'react-hot-toast'
 import { useCarrito } from '../../components/CarritoSimple'
 
 const MiPedido = () => {
+  console.log('🎯 MiPedido - COMPONENTE INICIADO')
   const navigate = useNavigate()
   
+  console.log('🎯 MiPedido - Antes de useCarrito')
   // Context del carrito
   const { 
     items: carrito, 
@@ -28,11 +30,14 @@ const MiPedido = () => {
     getTotalPrecio 
   } = useCarrito()
 
+  console.log('🎯 MiPedido - Después de useCarrito')
   console.log('🎯 MiPedido - carrito recibido:', carrito)
   console.log('🎯 MiPedido - número de items:', carrito?.length || 0)
 
   // Si el carrito está vacío, mostrar mensaje
+  console.log('🎯 MiPedido - Verificando si carrito está vacío:', carrito.length === 0)
   if (carrito.length === 0) {
+    console.log('🎯 MiPedido - Mostrando mensaje de carrito vacío')
     return (
       <div className="p-6">
         <div className="flex items-center space-x-4 mb-6">
@@ -78,12 +83,14 @@ const MiPedido = () => {
   }
 
   // Simular estados de pedido para los items del carrito
+  console.log('🎯 MiPedido - Creando pedido con carrito:', carrito)
   const pedido = carrito.map((item, index) => ({
     ...item,
     estado: index === 0 ? 'en_preparacion' : 'listo',
     tiempo_estimado: index === 0 ? 12 : 0,
     observaciones: index === 0 ? 'Bien cocida' : index === 1 ? 'Sin sal en el borde' : ''
   }))
+  console.log('🎯 MiPedido - Pedido creado:', pedido)
 
   const obtenerEstadoItem = (estado) => {
     switch (estado) {
