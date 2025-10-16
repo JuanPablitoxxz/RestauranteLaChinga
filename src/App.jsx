@@ -32,6 +32,11 @@ import CobrosCajero from './pages/cajero/Cobros'
 import ReportesCajero from './pages/cajero/Reportes'
 import ReservasCajero from './pages/cajero/Reservas'
 
+// Páginas de cliente
+import CartaCliente from './pages/cliente/Carta'
+import MiPedido from './pages/cliente/MiPedido'
+import Factura from './pages/cliente/Factura'
+
 // Páginas de admin
 import DashboardAdmin from './pages/admin/DashboardSimple'
 import UsuariosAdmin from './pages/admin/Usuarios'
@@ -139,6 +144,20 @@ function App() {
                   <Route path="*" element={<Navigate to="/cajero/cobros" replace />} />
                 </Routes>
               </LayoutCajero>
+            </RutaProtegida>
+          } />
+          
+          {/* Rutas de cliente */}
+          <Route path="/cliente/*" element={
+            <RutaProtegida rolesPermitidos={['cliente']}>
+              <LayoutCliente>
+                <Routes>
+                  <Route path="carta" element={<CartaCliente />} />
+                  <Route path="pedido" element={<MiPedido />} />
+                  <Route path="factura" element={<Factura />} />
+                  <Route path="*" element={<Navigate to="/cliente/carta" replace />} />
+                </Routes>
+              </LayoutCliente>
             </RutaProtegida>
           } />
           
