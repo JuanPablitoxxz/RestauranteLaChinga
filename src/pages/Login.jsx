@@ -26,13 +26,6 @@ const Login = () => {
     { value: 'cocina', label: 'Jefe de Cocina', descripcion: 'Gestionar pedidos de cocina' }
   ]
 
-  const credencialesMock = {
-    cliente: { email: 'cliente@test.com', password: 'cliente123' },
-    mesero: { email: 'mesero1@lachinga.com', password: 'mesero123' },
-    cajero: { email: 'cajero@lachinga.com', password: 'cajero123' },
-    admin: { email: 'admin@lachinga.com', password: 'admin123' },
-    cocina: { email: 'cocina@lachinga.com', password: 'cocina123' }
-  }
 
   const onSubmit = async (data) => {
     try {
@@ -49,14 +42,6 @@ const Login = () => {
     }
   }
 
-  const llenarCredenciales = () => {
-    const credenciales = credencialesMock[rolSeleccionado]
-    if (credenciales) {
-      // Simular llenado de formulario
-      document.querySelector('input[name="email"]').value = credenciales.email
-      document.querySelector('input[name="password"]').value = credenciales.password
-    }
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -187,16 +172,6 @@ const Login = () => {
               )}
             </div>
 
-            {/* Botón de credenciales rápidas */}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={llenarCredenciales}
-                className="text-sm text-primary-600 hover:text-primary-800 underline"
-              >
-                Llenar credenciales de prueba
-              </button>
-            </div>
 
             {/* Botón de envío */}
             <motion.button
@@ -217,19 +192,6 @@ const Login = () => {
             </motion.button>
           </form>
 
-          {/* Información de credenciales */}
-          <div className="mt-6 p-4 bg-neutral-50 rounded-lg">
-            <h3 className="text-sm font-medium text-neutral-800 mb-2">
-              Credenciales de prueba:
-            </h3>
-            <div className="text-xs text-neutral-600 space-y-1">
-              <p><strong>Cliente:</strong> cliente@test.com / cliente123</p>
-              <p><strong>Mesero:</strong> mesero1@lachinga.com / mesero123</p>
-              <p><strong>Cajero:</strong> cajero@lachinga.com / cajero123</p>
-              <p><strong>Admin:</strong> admin@lachinga.com / admin123</p>
-              <p><strong>Cocina:</strong> cocina@lachinga.com / cocina123</p>
-            </div>
-          </div>
         </motion.div>
 
         {/* Footer */}
