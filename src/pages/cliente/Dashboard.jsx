@@ -8,6 +8,7 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 import InfoMesaCliente from '../../components/InfoMesaCliente'
+import CarritoDemo from '../../components/CarritoDemo'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
 
 const DashboardCliente = () => {
@@ -80,6 +81,9 @@ const DashboardCliente = () => {
           Hola {reservaCliente.cliente_nombre}, tu mesa está lista
         </p>
       </motion.div>
+
+      {/* Datos de prueba */}
+      <CarritoDemo />
 
       {/* Información de la mesa */}
       <motion.div

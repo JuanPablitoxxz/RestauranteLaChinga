@@ -13,43 +13,74 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { useCarritoStore } from '../../stores/carritoStore'
 
 const MiPedido = () => {
   const navigate = useNavigate()
-  const [pedido, setPedido] = useState([
-    {
-      id: 1,
-      nombre: 'Carnitas',
-      descripcion: 'Carne de cerdo cocida lentamente con tortillas',
-      precio: 130.00,
-      cantidad: 1,
-      estado: 'en_preparacion',
-      tiempo_estimado: 12,
-      observaciones: 'Bien cocida'
-    },
-    {
-      id: 2,
-      nombre: 'Margarita Clásica',
-      descripcion: 'Coctel de tequila con limón y sal',
-      precio: 85.00,
-      cantidad: 1,
-      estado: 'listo',
-      tiempo_estimado: 0,
-      observaciones: 'Sin sal en el borde'
-    },
-    {
-      id: 3,
-      nombre: 'Agua de Horchata',
-      descripcion: 'Bebida refrescante de arroz con canela',
-      precio: 35.00,
-      cantidad: 1,
-      estado: 'listo',
-      tiempo_estimado: 0,
-      observaciones: ''
-    }
-  ])
+  
+  // Store global del carrito
+  const { 
+    items: carrito, 
+    actualizarCantidad, 
+    eliminarItem, 
+    setObservaciones, 
+    observaciones,
+    getTotalPrecio 
+  } = useCarritoStore()
 
-  const [observacionesGenerales, setObservacionesGenerales] = useState('')
+  // Si el carrito está vacío, mostrar mensaje
+  if (carrito.length === 0) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center space-x-4 mb-6">
+          <button
+            onClick={() => navigate('/cliente/dashboard')}
+            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+          >
+            <ArrowLeftIcon className="h-6 w-6 text-neutral-600" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-mexico-rojo-600 font-mexico mb-2">
+              Mi Pedido 🇲🇽
+            </h1>
+            <p className="text-neutral-600">
+              Revisa y gestiona tu pedido actual
+            </p>
+          </div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-lg border border-neutral-200 p-12 text-center"
+        >
+          <ShoppingCartIcon className="h-16 w-16 text-neutral-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+            Tu carrito está vacío
+          </h3>
+          <p className="text-neutral-600 mb-6">
+            Ve a la carta para agregar platos a tu pedido
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/cliente/carta')}
+            className="btn-primary"
+          >
+            Ver Carta
+          </motion.button>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Simular estados de pedido para los items del carrito
+  const pedido = carrito.map((item, index) => ({
+    ...item,
+    estado: index === 0 ? 'en_preparacion' : 'listo',
+    tiempo_estimado: index === 0 ? 12 : 0,
+    observaciones: index === 0 ? 'Bien cocida' : index === 1 ? 'Sin sal en el borde' : ''
+  }))
 
   const obtenerEstadoItem = (estado) => {
     switch (estado) {
@@ -91,33 +122,7 @@ const MiPedido = () => {
     }
   }
 
-  const actualizarCantidad = (itemId, nuevaCantidad) => {
-    if (nuevaCantidad <= 0) {
-      eliminarItem(itemId)
-      return
-    }
-
-    setPedido(pedido.map(item =>
-      item.id === itemId
-        ? { ...item, cantidad: nuevaCantidad }
-        : item
-    ))
-  }
-
-  const eliminarItem = (itemId) => {
-    setPedido(pedido.filter(item => item.id !== itemId))
-    toast.success('Item eliminado del pedido')
-  }
-
-  const agregarObservaciones = (itemId, observaciones) => {
-    setPedido(pedido.map(item =>
-      item.id === itemId
-        ? { ...item, observaciones }
-        : item
-    ))
-  }
-
-  const totalPedido = pedido.reduce((total, item) => total + (item.precio * item.cantidad), 0)
+  const totalPedido = getTotalPrecio()
   const itemsPendientes = pedido.filter(item => item.estado === 'pendiente').length
   const itemsEnPreparacion = pedido.filter(item => item.estado === 'en_preparacion').length
   const itemsListos = pedido.filter(item => item.estado === 'listo').length
@@ -302,8 +307,8 @@ const MiPedido = () => {
           Observaciones Generales del Pedido
         </h3>
         <textarea
-          value={observacionesGenerales}
-          onChange={(e) => setObservacionesGenerales(e.target.value)}
+          value={observaciones}
+          onChange={(e) => setObservaciones(e.target.value)}
           rows={3}
           className="input-field resize-none"
           placeholder="Alergias, preferencias especiales, instrucciones adicionales..."

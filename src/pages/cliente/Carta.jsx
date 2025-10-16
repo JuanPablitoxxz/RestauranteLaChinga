@@ -14,13 +14,23 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
+import { useCarritoStore } from '../../stores/carritoStore'
 
 const CartaCliente = () => {
-  const [carrito, setCarrito] = useState([])
   const [filtroCategoria, setFiltroCategoria] = useState('todas')
   const [busqueda, setBusqueda] = useState('')
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false)
   const navigate = useNavigate()
+  
+  // Store global del carrito
+  const { 
+    items: carrito, 
+    agregarItem, 
+    quitarItem, 
+    getCantidadItem, 
+    getTotalItems, 
+    getTotalPrecio 
+  } = useCarritoStore()
   
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()
@@ -125,41 +135,19 @@ const CartaCliente = () => {
   }) || []
 
   const agregarAlCarrito = (plato) => {
-    const itemExistente = carrito.find(item => item.id === plato.id)
-    
-    if (itemExistente) {
-      setCarrito(carrito.map(item =>
-        item.id === plato.id
-          ? { ...item, cantidad: item.cantidad + 1 }
-          : item
-      ))
-    } else {
-      setCarrito([...carrito, { ...plato, cantidad: 1 }])
-    }
-    
+    agregarItem(plato)
     toast.success(`${plato.nombre} agregado al carrito`)
   }
 
   const quitarDelCarrito = (platoId) => {
-    const itemExistente = carrito.find(item => item.id === platoId)
-    
-    if (itemExistente && itemExistente.cantidad > 1) {
-      setCarrito(carrito.map(item =>
-        item.id === platoId
-          ? { ...item, cantidad: item.cantidad - 1 }
-          : item
-      ))
-    } else {
-      setCarrito(carrito.filter(item => item.id !== platoId))
-    }
+    quitarItem(platoId)
   }
 
   const cantidadEnCarrito = (platoId) => {
-    const item = carrito.find(item => item.id === platoId)
-    return item ? item.cantidad : 0
+    return getCantidadItem(platoId)
   }
 
-  const totalCarrito = carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0)
+  const totalCarrito = getTotalPrecio()
 
   const notificarMesero = () => {
     toast.success('Notificación enviada al mesero')
@@ -353,7 +341,7 @@ const CartaCliente = () => {
       </motion.div>
 
       {/* Carrito flotante */}
-      {carrito.length > 0 && (
+      {getTotalItems() > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
@@ -364,7 +352,7 @@ const CartaCliente = () => {
             <div className="flex items-center space-x-2">
               <ShoppingCartIcon className="h-5 w-5 text-mexico-verde-600" />
               <span className="text-sm font-medium text-mexico-verde-600">
-                {carrito.reduce((total, item) => total + item.cantidad, 0)} items
+                {getTotalItems()} items
               </span>
             </div>
           </div>
