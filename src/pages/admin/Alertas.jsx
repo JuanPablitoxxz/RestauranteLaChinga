@@ -12,8 +12,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline'
+import FormularioAlerta from '../../components/forms/FormularioAlerta'
 
 const AlertasAdmin = () => {
+  const [mostrarFormularioAlerta, setMostrarFormularioAlerta] = useState(false)
   const [alertas, setAlertas] = useState([
     {
       id: 1,
@@ -180,11 +182,7 @@ const AlertasAdmin = () => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            setAccionModal('crear')
-            setAlertaSeleccionada(null)
-            setMostrarModal(true)
-          }}
+          onClick={() => setMostrarFormularioAlerta(true)}
           className="btn-primary flex items-center space-x-2"
         >
           <PlusIcon className="h-4 w-4" />
@@ -392,6 +390,16 @@ const AlertasAdmin = () => {
           <li>• <strong>Éxito:</strong> Confirmaciones de acciones completadas</li>
         </ul>
       </motion.div>
+
+      {/* Formulario de Alerta */}
+      <FormularioAlerta
+        isOpen={mostrarFormularioAlerta}
+        onClose={() => setMostrarFormularioAlerta(false)}
+        onAlertaCreada={(nuevaAlerta) => {
+          // Aquí se actualizaría la lista de alertas
+          console.log('Alerta creada:', nuevaAlerta)
+        }}
+      />
     </div>
   )
 }

@@ -11,11 +11,13 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import FormularioCarta from '../../components/forms/FormularioCarta'
 
 const CartasAdmin = () => {
   const [cartaSeleccionada, setCartaSeleccionada] = useState(null)
   const [mostrarModal, setMostrarModal] = useState(false)
   const [accionModal, setAccionModal] = useState('ver') // ver, editar, crear
+  const [mostrarFormularioCarta, setMostrarFormularioCarta] = useState(false)
 
   // Obtener cartas
   const { data: cartas, isLoading: isLoadingCartas } = useQuery({
@@ -132,11 +134,7 @@ const CartasAdmin = () => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            setAccionModal('crear')
-            setCartaSeleccionada(null)
-            setMostrarModal(true)
-          }}
+          onClick={() => setMostrarFormularioCarta(true)}
           className="btn-primary flex items-center space-x-2"
         >
           <PlusIcon className="h-4 w-4" />
@@ -413,6 +411,16 @@ const CartasAdmin = () => {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Formulario de Carta */}
+      <FormularioCarta
+        isOpen={mostrarFormularioCarta}
+        onClose={() => setMostrarFormularioCarta(false)}
+        onCartaCreada={(nuevaCarta) => {
+          // Aquí se actualizaría la lista de cartas
+          console.log('Carta creada:', nuevaCarta)
+        }}
+      />
     </div>
   )
 }

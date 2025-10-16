@@ -13,6 +13,7 @@ import {
   EnvelopeIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline'
+import FormularioUsuario from '../../components/forms/FormularioUsuario'
 
 const UsuariosAdmin = () => {
   const queryClient = useQueryClient()
@@ -21,6 +22,7 @@ const UsuariosAdmin = () => {
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null)
   const [mostrarModal, setMostrarModal] = useState(false)
   const [accionModal, setAccionModal] = useState('ver') // ver, editar, crear
+  const [mostrarFormularioUsuario, setMostrarFormularioUsuario] = useState(false)
 
   // Obtener usuarios
   const { data: usuarios, isLoading: isLoadingUsuarios } = useQuery({
@@ -197,11 +199,7 @@ const UsuariosAdmin = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                setAccionModal('crear')
-                setUsuarioSeleccionado(null)
-                setMostrarModal(true)
-              }}
+              onClick={() => setMostrarFormularioUsuario(true)}
               className="btn-primary flex items-center space-x-2"
             >
               <UserPlusIcon className="h-4 w-4" />
@@ -441,6 +439,17 @@ const UsuariosAdmin = () => {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Formulario de Usuario */}
+      <FormularioUsuario
+        isOpen={mostrarFormularioUsuario}
+        onClose={() => setMostrarFormularioUsuario(false)}
+        onUsuarioCreado={(nuevoUsuario) => {
+          // Aquí se actualizaría la lista de usuarios
+          queryClient.invalidateQueries(['usuarios'])
+          toast.success('Usuario creado exitosamente')
+        }}
+      />
     </div>
   )
 }

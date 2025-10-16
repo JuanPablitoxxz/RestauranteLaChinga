@@ -8,11 +8,15 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   XCircleIcon,
-  MapPinIcon
+  MapPinIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
+import MesaDetalle from '../../components/MesaDetalle'
 
 const MesasAdmin = () => {
   const [filtro, setFiltro] = useState('todas') // todas, libres, ocupadas, con_pedido, pendiente_pago
+  const [mesaSeleccionada, setMesaSeleccionada] = useState(null)
+  const [mostrarDetalle, setMostrarDetalle] = useState(false)
 
   // Obtener mesas
   const { data: mesas, isLoading: isLoadingMesas } = useQuery({
@@ -272,6 +276,20 @@ const MesasAdmin = () => {
                   )}
                 </div>
 
+                {/* Botón de ver detalles */}
+                <div className="mt-3 pt-3 border-t border-neutral-200">
+                  <button
+                    onClick={() => {
+                      setMesaSeleccionada(mesa)
+                      setMostrarDetalle(true)
+                    }}
+                    className="w-full flex items-center justify-center space-x-2 text-xs text-neutral-600 hover:text-mexico-rojo-600 transition-colors"
+                  >
+                    <EyeIcon className="h-4 w-4" />
+                    <span>Ver Detalles</span>
+                  </button>
+                </div>
+
                 {/* Indicador de prioridad */}
                 {mesa.estado === 'con_pedido' && (
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
@@ -373,6 +391,21 @@ const MesasAdmin = () => {
           </table>
         </div>
       </motion.div>
+
+      {/* Modal de Detalle de Mesa */}
+      <MesaDetalle
+        mesa={mesaSeleccionada}
+        isOpen={mostrarDetalle}
+        onClose={() => {
+          setMostrarDetalle(false)
+          setMesaSeleccionada(null)
+        }}
+        onMesaActualizada={(datosActualizados) => {
+          // Aquí se actualizaría la mesa en la base de datos
+          console.log('Mesa actualizada:', datosActualizados)
+        }}
+        meserosDisponibles={meseros}
+      />
     </div>
   )
 }
