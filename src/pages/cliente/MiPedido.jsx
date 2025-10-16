@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { 
   ShoppingCartIcon,
   PlusIcon,
@@ -8,41 +9,43 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
-  BellIcon
+  BellIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 const MiPedido = () => {
+  const navigate = useNavigate()
   const [pedido, setPedido] = useState([
     {
       id: 1,
-      nombre: 'Chilaquiles Rojos',
-      descripcion: 'Tortillas fritas con salsa roja, crema, queso y cebolla',
-      precio: 85.00,
-      cantidad: 2,
-      estado: 'pendiente',
-      tiempo_estimado: 15,
-      observaciones: 'Sin cebolla'
+      nombre: 'Carnitas',
+      descripcion: 'Carne de cerdo cocida lentamente con tortillas',
+      precio: 130.00,
+      cantidad: 1,
+      estado: 'en_preparacion',
+      tiempo_estimado: 12,
+      observaciones: 'Bien cocida'
     },
     {
       id: 2,
+      nombre: 'Margarita Clásica',
+      descripcion: 'Coctel de tequila con limón y sal',
+      precio: 85.00,
+      cantidad: 1,
+      estado: 'listo',
+      tiempo_estimado: 0,
+      observaciones: 'Sin sal en el borde'
+    },
+    {
+      id: 3,
       nombre: 'Agua de Horchata',
       descripcion: 'Bebida refrescante de arroz con canela',
       precio: 35.00,
       cantidad: 1,
-      estado: 'en_preparacion',
-      tiempo_estimado: 5,
-      observaciones: ''
-    },
-    {
-      id: 3,
-      nombre: 'Tacos al Pastor',
-      descripcion: 'Tacos de cerdo marinado con piña y cebolla',
-      precio: 95.00,
-      cantidad: 1,
       estado: 'listo',
       tiempo_estimado: 0,
-      observaciones: 'Extra piña'
+      observaciones: ''
     }
   ])
 
@@ -131,12 +134,22 @@ const MiPedido = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <h1 className="text-3xl font-bold text-mexico-rojo-600 font-mexico mb-2">
-          Mi Pedido 🇲🇽
-        </h1>
-        <p className="text-neutral-600">
-          Revisa y gestiona tu pedido actual
-        </p>
+        <div className="flex items-center space-x-4 mb-4">
+          <button
+            onClick={() => navigate('/cliente/dashboard')}
+            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+          >
+            <ArrowLeftIcon className="h-6 w-6 text-neutral-600" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-mexico-rojo-600 font-mexico mb-2">
+              Mi Pedido 🇲🇽
+            </h1>
+            <p className="text-neutral-600">
+              Revisa y gestiona tu pedido actual
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Estadísticas del Pedido */}
@@ -342,10 +355,7 @@ const MiPedido = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                // Aquí se navegaría a la página de factura
-                toast.success('Redirigiendo a la factura...')
-              }}
+              onClick={() => navigate('/cliente/factura')}
               className="flex-1 btn-success"
             >
               Ver Factura

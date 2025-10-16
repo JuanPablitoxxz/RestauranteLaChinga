@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { 
   DocumentTextIcon,
   PrinterIcon,
@@ -9,11 +10,13 @@ import {
   ClockIcon,
   MapPinIcon,
   PhoneIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 const Factura = () => {
+  const navigate = useNavigate()
   const [isGenerandoPDF, setIsGenerandoPDF] = useState(false)
 
   // Datos mock de la factura
@@ -27,30 +30,30 @@ const Factura = () => {
     items: [
       {
         id: 1,
-        nombre: 'Chilaquiles Rojos',
-        cantidad: 2,
-        precio: 85.00,
-        subtotal: 170.00
+        nombre: 'Carnitas',
+        cantidad: 1,
+        precio: 130.00,
+        subtotal: 130.00
       },
       {
         id: 2,
+        nombre: 'Margarita Clásica',
+        cantidad: 1,
+        precio: 85.00,
+        subtotal: 85.00
+      },
+      {
+        id: 3,
         nombre: 'Agua de Horchata',
         cantidad: 1,
         precio: 35.00,
         subtotal: 35.00
-      },
-      {
-        id: 3,
-        nombre: 'Tacos al Pastor',
-        cantidad: 1,
-        precio: 95.00,
-        subtotal: 95.00
       }
     ],
-    subtotal: 300.00,
-    iva: 48.00,
-    propina: 30.00,
-    total: 378.00,
+    subtotal: 250.00,
+    iva: 40.00,
+    propina: 25.00,
+    total: 315.00,
     metodo_pago: 'Efectivo',
     estado: 'pagada'
   }
@@ -103,12 +106,22 @@ const Factura = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <h1 className="text-3xl font-bold text-mexico-rojo-600 font-mexico mb-2">
-          Mi Factura 🇲🇽
-        </h1>
-        <p className="text-neutral-600">
-          Revisa y descarga tu factura
-        </p>
+        <div className="flex items-center space-x-4 mb-4">
+          <button
+            onClick={() => navigate('/cliente/dashboard')}
+            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+          >
+            <ArrowLeftIcon className="h-6 w-6 text-neutral-600" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-mexico-rojo-600 font-mexico mb-2">
+              Mi Factura 🇲🇽
+            </h1>
+            <p className="text-neutral-600">
+              Revisa y descarga tu factura
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Factura */}

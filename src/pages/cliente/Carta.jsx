@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { 
   ShoppingCartIcon,
   PlusIcon,
@@ -19,6 +20,7 @@ const CartaCliente = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('todas')
   const [busqueda, setBusqueda] = useState('')
   const [mostrarNotificacion, setMostrarNotificacion] = useState(false)
+  const navigate = useNavigate()
   
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()
@@ -387,10 +389,7 @@ const CartaCliente = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                // Aquí se navegaría a la página de pedido
-                toast.success('Redirigiendo a tu pedido...')
-              }}
+              onClick={() => navigate('/cliente/pedido')}
               className="w-full btn-primary text-sm"
             >
               Ver Mi Pedido

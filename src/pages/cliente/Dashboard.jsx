@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import { 
   MapPinIcon,
   ShoppingCartIcon,
@@ -10,9 +11,7 @@ import InfoMesaCliente from '../../components/InfoMesaCliente'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
 
 const DashboardCliente = () => {
-  const [mostrarCarta, setMostrarCarta] = useState(false)
-  const [mostrarPedido, setMostrarPedido] = useState(false)
-  const [mostrarFactura, setMostrarFactura] = useState(false)
+  const navigate = useNavigate()
   
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, esHorarioValido } = useMenuDinamico()
@@ -43,7 +42,7 @@ const DashboardCliente = () => {
       descripcion: 'Explora nuestro menú mexicano',
       icono: ShoppingCartIcon,
       color: 'mexico-verde',
-      accion: () => setMostrarCarta(true),
+      accion: () => navigate('/cliente/carta'),
       disponible: esHorarioValido
     },
     {
@@ -52,7 +51,7 @@ const DashboardCliente = () => {
       descripcion: 'Revisa tu pedido actual',
       icono: ClockIcon,
       color: 'mexico-dorado',
-      accion: () => setMostrarPedido(true),
+      accion: () => navigate('/cliente/pedido'),
       disponible: true
     },
     {
@@ -61,7 +60,7 @@ const DashboardCliente = () => {
       descripcion: 'Descarga tu factura',
       icono: DocumentTextIcon,
       color: 'mexico-rojo',
-      accion: () => setMostrarFactura(true),
+      accion: () => navigate('/cliente/factura'),
       disponible: true
     }
   ]
@@ -183,81 +182,6 @@ const DashboardCliente = () => {
         </ul>
       </motion.div>
 
-      {/* Modales (simplificados) */}
-      {mostrarCarta && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-neutral-800">Nuestra Carta</h2>
-                <button
-                  onClick={() => setMostrarCarta(false)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-neutral-600 text-center py-8">
-                Aquí se mostraría la carta completa con los platos disponibles según el horario actual.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {mostrarPedido && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-neutral-800">Mi Pedido</h2>
-                <button
-                  onClick={() => setMostrarPedido(false)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-neutral-600 text-center py-8">
-                Aquí se mostraría el seguimiento de tu pedido en tiempo real.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {mostrarFactura && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-          >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-neutral-800">Mi Factura</h2>
-                <button
-                  onClick={() => setMostrarFactura(false)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-neutral-600 text-center py-8">
-                Aquí se mostraría tu factura con la opción de descargar en PDF.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   )
 }
