@@ -7,7 +7,9 @@ export const CarritoProvider = ({ children }) => {
   const [carrito, setCarrito] = useState([])
   const [observaciones, setObservaciones] = useState('')
 
-  console.log('CarritoProvider - Estado actual:', { carrito, observaciones })
+  console.log('🚀 CarritoProvider - Estado actual:', { carrito, observaciones })
+  console.log('🚀 CarritoProvider - Número de items:', carrito.length)
+  console.log('🚀 CarritoProvider - Items:', carrito)
 
   const agregarItem = (plato) => {
     console.log('Agregando plato al carrito:', plato)
@@ -133,9 +135,11 @@ export const CarritoProvider = ({ children }) => {
 export const useCarrito = () => {
   const context = useContext(CarritoContext)
   if (!context) {
-    console.error('useCarrito debe ser usado dentro de CarritoProvider')
+    console.error('❌ useCarrito debe ser usado dentro de CarritoProvider')
     throw new Error('useCarrito debe ser usado dentro de CarritoProvider')
   }
-  console.log('useCarrito hook llamado, context:', context)
+  console.log('✅ useCarrito hook llamado, context:', context)
+  console.log('✅ useCarrito - items recibidos:', context.items)
+  console.log('✅ useCarrito - número de items:', context.items?.length || 0)
   return context
 }

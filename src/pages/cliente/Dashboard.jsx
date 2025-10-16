@@ -11,6 +11,7 @@ import InfoMesaCliente from '../../components/InfoMesaCliente'
 import CarritoDemo from '../../components/CarritoDemo'
 import TestCarrito from '../../components/TestCarrito'
 import TestCarritoSimple from '../../components/TestCarritoSimple'
+import DiagnosticoCarrito from '../../components/DiagnosticoCarrito'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
 
 const DashboardCliente = () => {
@@ -84,6 +85,9 @@ const DashboardCliente = () => {
         </p>
       </motion.div>
 
+      {/* Diagnóstico del carrito */}
+      <DiagnosticoCarrito />
+      
       {/* Test simple del carrito */}
       <TestCarritoSimple />
       

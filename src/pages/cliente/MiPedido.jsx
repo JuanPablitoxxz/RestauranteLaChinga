@@ -28,6 +28,9 @@ const MiPedido = () => {
     getTotalPrecio 
   } = useCarrito()
 
+  console.log('🎯 MiPedido - carrito recibido:', carrito)
+  console.log('🎯 MiPedido - número de items:', carrito?.length || 0)
+
   // Si el carrito está vacío, mostrar mensaje
   if (carrito.length === 0) {
     return (

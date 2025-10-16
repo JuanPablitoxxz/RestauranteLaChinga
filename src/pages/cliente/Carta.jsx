@@ -31,6 +31,9 @@ const CartaCliente = () => {
     getTotalItems, 
     getTotalPrecio 
   } = useCarrito()
+
+  console.log('🍽️ Carta - carrito recibido:', carrito)
+  console.log('🍽️ Carta - número de items:', carrito?.length || 0)
   
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()
