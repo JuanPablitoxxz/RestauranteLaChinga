@@ -50,6 +50,20 @@ export const useMeseroAsignaciones = () => {
         turno: asignacion.turno
       })) || []
 
+      // Si no hay mesas asignadas, usar datos mock para el mesero actual
+      if (mesasTransformadas.length === 0) {
+        console.log('⚠️ No hay mesas asignadas en Supabase, usando datos mock')
+        const mesasMock = [
+          { id: 1, numero: 1, capacidad: 2, estado: 'libre', ubicacion: 'interior' },
+          { id: 2, numero: 2, capacidad: 4, estado: 'ocupada', ubicacion: 'interior' },
+          { id: 3, numero: 3, capacidad: 2, estado: 'libre', ubicacion: 'terraza' },
+          { id: 4, numero: 4, capacidad: 6, estado: 'con_pedido', ubicacion: 'interior' },
+          { id: 5, numero: 5, capacidad: 4, estado: 'libre', ubicacion: 'terraza' },
+          { id: 6, numero: 6, capacidad: 2, estado: 'pendiente_pago', ubicacion: 'interior' }
+        ]
+        return mesasMock
+      }
+
       return mesasTransformadas
     },
     enabled: !!usuario?.id && usuario.rol === 'mesero',
@@ -80,6 +94,45 @@ export const useMeseroAsignaciones = () => {
       }
 
       console.log('✅ Notificaciones obtenidas:', data?.length || 0)
+      
+      // Si no hay notificaciones, usar datos mock
+      if (!data || data.length === 0) {
+        console.log('⚠️ No hay notificaciones en Supabase, usando datos mock')
+        const notificacionesMock = [
+          {
+            id: 1,
+            tipo: 'pedido_nuevo',
+            titulo: 'Nuevo pedido - Mesa 2',
+            mensaje: 'El cliente ha realizado un pedido con 3 items',
+            leida: false,
+            prioridad: 'alta',
+            created_at: new Date(Date.now() - 300000).toISOString(), // 5 min atrás
+            datos: { mesaId: 2, pedidoId: 1 }
+          },
+          {
+            id: 2,
+            tipo: 'cliente_termina',
+            titulo: 'Cliente solicita cuenta - Mesa 4',
+            mensaje: 'El cliente solicita la cuenta',
+            leida: false,
+            prioridad: 'alta',
+            created_at: new Date(Date.now() - 600000).toISOString(), // 10 min atrás
+            datos: { mesaId: 4 }
+          },
+          {
+            id: 3,
+            tipo: 'pedido_listo',
+            titulo: 'Pedido listo - Mesa 1',
+            mensaje: 'El pedido está listo para entregar',
+            leida: true,
+            prioridad: 'normal',
+            created_at: new Date(Date.now() - 1800000).toISOString(), // 30 min atrás
+            datos: { mesaId: 1, pedidoId: 3 }
+          }
+        ]
+        return notificacionesMock
+      }
+      
       return data || []
     },
     enabled: !!usuario?.id && usuario.rol === 'mesero',
