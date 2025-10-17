@@ -39,13 +39,13 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
       const usuarioData = {
         email: data.email,
         password: data.password,
-        nombre: `${data.nombre} ${data.apellido}`,
+        nombre: data.nombre,
+        apellido: data.apellido,
         rol: data.rol,
         telefono: data.telefono || null,
         turno: data.turno || null,
         activo: true,
-        es_temporal: false,
-        fecha_creacion: new Date().toISOString()
+        es_temporal: false
       }
 
       // Insertar usuario en Supabase

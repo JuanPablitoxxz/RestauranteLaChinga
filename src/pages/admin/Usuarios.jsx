@@ -32,7 +32,7 @@ const UsuariosAdmin = () => {
       const { data, error } = await supabase
         .from('usuarios')
         .select('*')
-        .order('fecha_creacion', { ascending: false })
+        .order('id', { ascending: false })
       
       if (error) {
         console.error('Error al obtener usuarios:', error)
@@ -427,9 +427,9 @@ const UsuariosAdmin = () => {
                   </div>
                   
                   <div className="flex justify-between">
-                    <span className="text-neutral-600">Fecha de creación:</span>
-                    <span className="text-neutral-800">
-                      {new Date(usuarioSeleccionado.fechaCreacion).toLocaleDateString()}
+                    <span className="text-neutral-600">ID:</span>
+                    <span className="text-neutral-800 text-xs">
+                      {usuarioSeleccionado.id}
                     </span>
                   </div>
                 </div>
