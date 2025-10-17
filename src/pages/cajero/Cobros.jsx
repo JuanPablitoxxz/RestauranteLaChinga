@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { facturasMock, pedidosMock } from '../../data/mockData'
+import { useFacturasCompartidas } from '../../hooks/useFacturasCompartidas'
 import toast from 'react-hot-toast'
 import { 
   CreditCardIcon,
@@ -28,68 +29,22 @@ const CobrosCajero = () => {
   const [busqueda, setBusqueda] = useState('')
   const [facturaSeleccionada, setFacturaSeleccionada] = useState(null)
   const [mostrarModalPago, setMostrarModalPago] = useState(false)
+  const { facturas: facturasCompartidas, actualizarFactura } = useFacturasCompartidas()
   const [mostrarModalCancelacion, setMostrarModalCancelacion] = useState(false)
   const [motivoCancelacion, setMotivoCancelacion] = useState('')
 
-  // Obtener facturas
+  // Obtener facturas usando el hook compartido
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
     queryKey: ['facturas'],
     queryFn: () => {
       console.log('🔍 Obteniendo facturas para cajero...')
+      console.log('🔍 Facturas compartidas del hook:', facturasCompartidas)
       
-      // Verificar todas las claves de localStorage
-      console.log('🔍 Todas las claves localStorage:', Object.keys(localStorage))
-      
-      // Obtener facturas enviadas por clientes
-      const facturasEnviadasPorClientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
-      console.log('📤 Facturas enviadas por clientes:', facturasEnviadasPorClientes)
-      console.log('📤 Detalle de facturas enviadas:', JSON.stringify(facturasEnviadasPorClientes, null, 2))
-      
-      // Verificar localStorage directamente
-      const rawData = localStorage.getItem('facturasPendientesCajero')
-      console.log('🔍 Raw localStorage data:', rawData)
-      
-      // También verificar otras claves posibles
-      const facturasAlternativas = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
-      console.log('📊 Facturas alternativas:', facturasAlternativas)
-      
-      // SIEMPRE crear factura de prueba para testing
-      console.log('🧪 Creando factura de prueba SIEMPRE...')
-      const facturasDePrueba = [{
-        id: Date.now(),
-        numero: 'FAC-TEST-001',
-        cliente: 'Cliente de Prueba',
-        mesa: 5,
-        mesero: 'Mesero de Prueba',
-        total: 250.00,
-        fecha: new Date().toLocaleDateString('es-ES'),
-        hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-        items: [
-          { id: 1, nombre: 'Taco de Prueba', cantidad: 2, precio: 25.00, subtotal: 50.00 }
-        ],
-        subtotal: 200.00,
-        iva: 32.00,
-        propina: 18.00,
-        metodo_pago: 'efectivo',
-        estado: 'pendiente_cobro',
-        enviada_por_cliente: true,
-        fecha_envio: new Date().toISOString(),
-        fechaCreacion: new Date().toISOString(),
-        mesaId: 5,
-        pedidoId: Date.now()
-      }]
-      
-      // SIEMPRE guardar factura de prueba
-      localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasDePrueba))
-      console.log('✅ Factura de prueba SIEMPRE creada y guardada')
-      
-      // Combinar todas las facturas
-      const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes, ...facturasAlternativas, ...facturasDePrueba]
+      // Combinar facturas mock con las compartidas
+      const facturasCombinadas = [...facturasMock, ...facturasCompartidas]
       console.log('📋 Total facturas combinadas:', facturasCombinadas.length)
       console.log('📋 Facturas mock:', facturasMock.length)
-      console.log('📋 Facturas enviadas:', facturasEnviadasPorClientes.length)
-      console.log('📋 Facturas alternativas:', facturasAlternativas.length)
-      console.log('📋 Facturas de prueba:', facturasDePrueba.length)
+      console.log('📋 Facturas compartidas:', facturasCompartidas.length)
       
       // Ordenar por fecha de creación (más recientes primero)
       const facturasOrdenadas = facturasCombinadas.sort((a, b) => {
@@ -102,8 +57,8 @@ const CobrosCajero = () => {
       console.log('✅ Facturas con estado pendiente_cobro:', facturasOrdenadas.filter(f => f.estado === 'pendiente_cobro'))
       return facturasOrdenadas
     },
-    staleTime: 5 * 1000, // Reducir aún más el tiempo de caché
-    refetchInterval: 5 * 1000 // Refrescar cada 5 segundos
+    staleTime: 2 * 1000, // 2 segundos
+    refetchInterval: 2 * 1000 // Refrescar cada 2 segundos
   })
 
   // Obtener pedidos
@@ -681,48 +636,6 @@ const CobrosCajero = () => {
               <span>Refrescar</span>
             </motion.button>
             
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                console.log('📤 Simulando envío de factura desde cliente...')
-                const nuevaFactura = {
-                  id: Date.now(),
-                  numero: `FAC-${Date.now()}`,
-                  cliente: 'Cliente Simulado',
-                  mesa: Math.floor(Math.random() * 24) + 1,
-                  mesero: 'Mesero Simulado',
-                  total: Math.floor(Math.random() * 500) + 100,
-                  fecha: new Date().toLocaleDateString('es-ES'),
-                  hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-                  items: [
-                    { id: 1, nombre: 'Taco Simulado', cantidad: 2, precio: 25.00, subtotal: 50.00 }
-                  ],
-                  subtotal: 200.00,
-                  iva: 32.00,
-                  propina: 18.00,
-                  metodo_pago: 'efectivo',
-                  estado: 'pendiente_cobro',
-                  enviada_por_cliente: true,
-                  fecha_envio: new Date().toISOString(),
-                  fechaCreacion: new Date().toISOString(),
-                  mesaId: Math.floor(Math.random() * 24) + 1,
-                  pedidoId: Date.now()
-                }
-                
-                // Agregar a localStorage
-                const facturasExistentes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
-                facturasExistentes.push(nuevaFactura)
-                localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasExistentes))
-                
-                console.log('✅ Factura simulada agregada:', nuevaFactura)
-                queryClient.invalidateQueries(['facturas'])
-              }}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-            >
-              <span>📤</span>
-              <span>Simular Cliente</span>
-            </motion.button>
           </div>
         </div>
       </motion.div>

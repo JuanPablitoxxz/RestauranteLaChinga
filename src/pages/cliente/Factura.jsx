@@ -14,12 +14,14 @@ import {
   ArrowLeftIcon,
   PaperAirplaneIcon
 } from '@heroicons/react/24/outline'
+import { useFacturasCompartidas } from '../../hooks/useFacturasCompartidas'
 import toast from 'react-hot-toast'
 
 const Factura = () => {
   const navigate = useNavigate()
   const [isGenerandoPDF, setIsGenerandoPDF] = useState(false)
   const [isEnviandoCajero, setIsEnviandoCajero] = useState(false)
+  const { agregarFactura } = useFacturasCompartidas()
 
   // Datos mock de la factura
   const facturaData = {
@@ -133,24 +135,15 @@ const Factura = () => {
       
       console.log('📤 Enviando factura al cajero:', facturaParaCajero)
       
-      // Guardar en localStorage con múltiples claves para asegurar persistencia
-      const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
-      facturasPendientes.push(facturaParaCajero)
-      localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasPendientes))
+      // Usar el hook para agregar la factura
+      const exito = agregarFactura(facturaParaCajero)
       
-      // También guardar en una clave adicional para reportes
-      const facturasParaReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
-      facturasParaReportes.push({
-        ...facturaParaCajero,
-        tipo: 'enviada_por_cliente',
-        procesada: false
-      })
-      localStorage.setItem('facturasParaReportes', JSON.stringify(facturasParaReportes))
+      if (exito) {
+        toast.success('✅ Factura enviada al cajero exitosamente')
+      } else {
+        toast.error('❌ Error al enviar factura al cajero')
+      }
       
-      console.log('✅ Factura guardada en localStorage:', facturasPendientes.length, 'facturas totales')
-      console.log('📊 Factura guardada para reportes:', facturasParaReportes.length, 'facturas totales')
-      
-      toast.success('Factura enviada al cajero exitosamente')
     } catch (error) {
       console.error('❌ Error al enviar factura:', error)
       toast.error('Error al enviar la factura al cajero')
