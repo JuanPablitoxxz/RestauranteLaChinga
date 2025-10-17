@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
+import { usePlatosPorHora } from '../../hooks/usePlatosSupabase'
 import { useCarrito } from '../../components/CarritoSimple'
 
 const CartaCliente = () => {
@@ -38,7 +39,14 @@ const CartaCliente = () => {
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()
 
-  // Datos mock de platos
+  // Obtener platos de Supabase según la hora actual
+  const { data: platosSupabase, isLoading: cargandoPlatos, error: errorPlatos } = usePlatosPorHora()
+
+  console.log('🍽️ Carta - Platos de Supabase:', platosSupabase)
+  console.log('🍽️ Carta - Cargando platos:', cargandoPlatos)
+  console.log('🍽️ Carta - Error platos:', errorPlatos)
+
+  // Datos mock de platos (fallback)
   const platosMock = [
     {
       id: 1,
@@ -114,11 +122,7 @@ const CartaCliente = () => {
     }
   ]
 
-  const { data: platos, isLoading } = useQuery({
-    queryKey: ['platos'],
-    queryFn: () => platosMock,
-    staleTime: 5 * 60 * 1000
-  })
+  // Los platos ahora se obtienen de Supabase con usePlatosPorHora()
 
   const categorias = [
     { value: 'todas', label: 'Todas' },
@@ -127,6 +131,12 @@ const CartaCliente = () => {
     { value: 'cena', label: 'Cena' },
     { value: 'bebida', label: 'Bebidas' }
   ]
+
+  // Usar platos de Supabase si están disponibles, sino usar mock
+  const platos = platosSupabase && platosSupabase.length > 0 ? platosSupabase : platosMock
+  
+  console.log('🍽️ Carta - Platos finales a mostrar:', platos?.length || 0)
+  console.log('🍽️ Carta - Usando Supabase:', platosSupabase && platosSupabase.length > 0)
 
   const platosFiltrados = platos?.filter(plato => {
     // Filtrar por menú actual si está disponible
@@ -271,6 +281,33 @@ const CartaCliente = () => {
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Indicador de carga y error */}
+      {cargandoPlatos && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-8"
+        >
+          <div className="inline-flex items-center space-x-2 text-mexico-verde-600">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-mexico-verde-600"></div>
+            <span>Cargando menú...</span>
+          </div>
+        </motion.div>
+      )}
+
+      {errorPlatos && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+        >
+          <div className="flex items-center space-x-2 text-red-600">
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            <span>Error al cargar el menú. Mostrando menú de ejemplo.</span>
+          </div>
+        </motion.div>
+      )}
 
       {/* Grid de Platos */}
       <motion.div
