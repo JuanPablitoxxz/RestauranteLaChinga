@@ -24,7 +24,7 @@ import { es } from 'date-fns/locale'
 
 const CobrosCajero = () => {
   const queryClient = useQueryClient()
-  const [filtro, setFiltro] = useState('pendientes') // pendientes, pagadas, todas
+  const [filtro, setFiltro] = useState('todas') // pendientes, pagadas, todas
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [busqueda, setBusqueda] = useState('')
   const [facturaSeleccionada, setFacturaSeleccionada] = useState(null)
@@ -648,11 +648,49 @@ const CobrosCajero = () => {
                 console.log('🔍 Número de facturas del query:', facturas?.length)
                 console.log('🔍 localStorage facturasPendientesCajero:', localStorage.getItem('facturasPendientesCajero'))
                 console.log('🔍 localStorage facturasParaReportes:', localStorage.getItem('facturasParaReportes'))
+                
+                // Debug detallado de cada factura
+                if (facturas) {
+                  console.log('🔍 DETALLE DE FACTURAS:')
+                  facturas.forEach((factura, index) => {
+                    console.log(`🔍 Factura ${index + 1}:`, {
+                      id: factura.id,
+                      numero: factura.numero,
+                      cliente: factura.cliente,
+                      estado: factura.estado,
+                      enviada_por_cliente: factura.enviada_por_cliente,
+                      fecha_envio: factura.fecha_envio
+                    })
+                  })
+                }
               }}
               className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
             >
               <span>🔍</span>
               <span>Debug</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('🔧 Forzando facturas como pendientes...')
+                if (facturasCompartidas && facturasCompartidas.length > 0) {
+                  facturasCompartidas.forEach(factura => {
+                    if (factura.enviada_por_cliente) {
+                      console.log('🔧 Actualizando factura:', factura.id, 'a estado pendiente_cobro')
+                      actualizarFactura(factura.id, { estado: 'pendiente_cobro' })
+                    }
+                  })
+                  toast.success('✅ Facturas actualizadas como pendientes')
+                } else {
+                  toast.error('❌ No hay facturas para actualizar')
+                }
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+            >
+              <span>🔧</span>
+              <span>Forzar Pendientes</span>
             </motion.button>
             
           </div>
