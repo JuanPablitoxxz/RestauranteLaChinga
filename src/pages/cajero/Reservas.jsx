@@ -78,11 +78,32 @@ const ReservasCajero = () => {
     }
   ]
 
-  // Datos mock de mesas
+  // Datos mock de mesas (24 mesas completas)
   const mesasMock = [
     { id: 1, numero: 1, capacidad: 2, ubicacion: 'interior', estado: 'libre' },
-    { id: 5, numero: 5, capacidad: 4, ubicacion: 'interior', estado: 'reservada' },
-    { id: 15, numero: 15, capacidad: 6, ubicacion: 'vip', estado: 'libre' }
+    { id: 2, numero: 2, capacidad: 2, ubicacion: 'interior', estado: 'libre' },
+    { id: 3, numero: 3, capacidad: 4, ubicacion: 'interior', estado: 'libre' },
+    { id: 4, numero: 4, capacidad: 4, ubicacion: 'interior', estado: 'libre' },
+    { id: 5, numero: 5, capacidad: 4, ubicacion: 'interior', estado: 'libre' },
+    { id: 6, numero: 6, capacidad: 4, ubicacion: 'interior', estado: 'libre' },
+    { id: 7, numero: 7, capacidad: 6, ubicacion: 'interior', estado: 'libre' },
+    { id: 8, numero: 8, capacidad: 6, ubicacion: 'interior', estado: 'libre' },
+    { id: 9, numero: 9, capacidad: 2, ubicacion: 'terraza', estado: 'libre' },
+    { id: 10, numero: 10, capacidad: 2, ubicacion: 'terraza', estado: 'libre' },
+    { id: 11, numero: 11, capacidad: 4, ubicacion: 'terraza', estado: 'libre' },
+    { id: 12, numero: 12, capacidad: 4, ubicacion: 'terraza', estado: 'libre' },
+    { id: 13, numero: 13, capacidad: 4, ubicacion: 'terraza', estado: 'libre' },
+    { id: 14, numero: 14, capacidad: 4, ubicacion: 'terraza', estado: 'libre' },
+    { id: 15, numero: 15, capacidad: 6, ubicacion: 'terraza', estado: 'libre' },
+    { id: 16, numero: 16, capacidad: 6, ubicacion: 'terraza', estado: 'libre' },
+    { id: 17, numero: 17, capacidad: 8, ubicacion: 'vip', estado: 'libre' },
+    { id: 18, numero: 18, capacidad: 8, ubicacion: 'vip', estado: 'libre' },
+    { id: 19, numero: 19, capacidad: 10, ubicacion: 'vip', estado: 'libre' },
+    { id: 20, numero: 20, capacidad: 10, ubicacion: 'vip', estado: 'libre' },
+    { id: 21, numero: 21, capacidad: 12, ubicacion: 'vip', estado: 'libre' },
+    { id: 22, numero: 22, capacidad: 12, ubicacion: 'vip', estado: 'libre' },
+    { id: 23, numero: 23, capacidad: 2, ubicacion: 'barra', estado: 'libre' },
+    { id: 24, numero: 24, capacidad: 2, ubicacion: 'barra', estado: 'libre' }
   ]
 
   const { data: reservas, isLoading } = useQuery({
@@ -119,7 +140,14 @@ const ReservasCajero = () => {
       }
       
       console.log('✅ Mesas obtenidas de Supabase:', data)
-      return data || []
+      
+      // Si Supabase devuelve array vacío, usar datos mock
+      if (!data || data.length === 0) {
+        console.log('⚠️ Supabase devolvió array vacío, usando datos mock')
+        return mesasMock
+      }
+      
+      return data
     },
     staleTime: 5 * 60 * 1000
   })
