@@ -74,6 +74,12 @@ BEGIN
         RAISE NOTICE 'Columna nombre agregada';
     END IF;
     
+    -- Agregar apellido si no existe
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'apellido') THEN
+        ALTER TABLE usuarios ADD COLUMN apellido VARCHAR(255);
+        RAISE NOTICE 'Columna apellido agregada';
+    END IF;
+    
     -- Agregar rol si no existe
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'rol') THEN
         ALTER TABLE usuarios ADD COLUMN rol VARCHAR(50) DEFAULT 'cliente';
@@ -130,21 +136,38 @@ BEGIN
 END $$;
 
 -- 5. Actualizar datos existentes con valores por defecto
-UPDATE usuarios 
-SET 
-    password = COALESCE(password, 'temp123'),
-    nombre = COALESCE(nombre, 'Usuario ' || id),
-    rol = COALESCE(rol, 'cliente'),
-    activo = COALESCE(activo, TRUE),
-    es_temporal = COALESCE(es_temporal, FALSE),
-    fecha_creacion = COALESCE(fecha_creacion, NOW())
-WHERE 
-    password IS NULL OR 
-    nombre IS NULL OR 
-    rol IS NULL OR 
-    activo IS NULL OR 
-    es_temporal IS NULL OR 
-    fecha_creacion IS NULL;
+DO $$
+BEGIN
+    -- Actualizar registros con valores nulos
+    UPDATE usuarios 
+    SET 
+        password = COALESCE(password, 'temp123'),
+        nombre = COALESCE(nombre, 'Usuario ' || id),
+        rol = COALESCE(rol, 'cliente'),
+        activo = COALESCE(activo, TRUE),
+        es_temporal = COALESCE(es_temporal, FALSE),
+        fecha_creacion = COALESCE(fecha_creacion, NOW())
+    WHERE 
+        password IS NULL OR 
+        nombre IS NULL OR 
+        rol IS NULL OR 
+        activo IS NULL OR 
+        es_temporal IS NULL OR 
+        fecha_creacion IS NULL;
+    
+    -- Si existe la columna apellido, actualizarla también
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'usuarios' AND column_name = 'apellido') THEN
+        
+        UPDATE usuarios 
+        SET apellido = COALESCE(apellido, 'Apellido')
+        WHERE apellido IS NULL;
+        
+        RAISE NOTICE 'Columna apellido actualizada';
+    END IF;
+    
+    RAISE NOTICE 'Datos existentes actualizados con valores por defecto';
+END $$;
 
 -- 6. Hacer columnas NOT NULL solo después de actualizar datos
 DO $$
@@ -168,6 +191,17 @@ BEGIN
             RAISE NOTICE 'Columna nombre ahora es NOT NULL';
         EXCEPTION WHEN OTHERS THEN
             RAISE NOTICE 'No se pudo hacer nombre NOT NULL: %', SQLERRM;
+        END;
+    END IF;
+    
+    -- Hacer apellido NOT NULL si no lo es
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'usuarios' AND column_name = 'apellido' AND is_nullable = 'YES') THEN
+        BEGIN
+            ALTER TABLE usuarios ALTER COLUMN apellido SET NOT NULL;
+            RAISE NOTICE 'Columna apellido ahora es NOT NULL';
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'No se pudo hacer apellido NOT NULL: %', SQLERRM;
         END;
     END IF;
     
@@ -227,6 +261,10 @@ SELECT
     id,
     email,
     nombre,
+    CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'apellido') 
+         THEN apellido 
+         ELSE 'N/A' 
+    END as apellido,
     rol,
     activo,
     es_temporal,

@@ -16,9 +16,9 @@ ORDER BY ordinal_position;
 -- 2. Verificar constraints de la tabla
 SELECT 'CONSTRAINTS DE LA TABLA USUARIOS:' as info;
 SELECT 
-    constraint_name,
-    constraint_type,
-    column_name
+    tc.constraint_name,
+    tc.constraint_type,
+    kcu.column_name
 FROM information_schema.table_constraints tc
 JOIN information_schema.key_column_usage kcu 
     ON tc.constraint_name = kcu.constraint_name
