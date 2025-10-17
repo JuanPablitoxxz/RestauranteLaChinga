@@ -38,6 +38,7 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
       // Preparar datos para Supabase
       const usuarioData = {
         email: data.email,
+        password_hash: `hash_${data.password}_${Date.now()}`,
         password: data.password,
         nombre: data.nombre,
         apellido: data.apellido,
@@ -258,6 +259,7 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
               </label>
               <input
                 type="password"
+                autoComplete="new-password"
                 {...register('password', {
                   required: 'La contraseña es requerida',
                   minLength: {
