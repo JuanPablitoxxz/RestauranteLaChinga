@@ -125,13 +125,15 @@ const Factura = () => {
         iva: facturaData.iva,
         propina: facturaData.propina,
         metodo_pago: facturaData.metodo_pago,
-        estado: 'pendiente_cobro',
+        estado: 'pendiente_cobro', // ✅ ESTADO CORRECTO
         enviada_por_cliente: true,
         fecha_envio: new Date().toISOString(),
         fechaCreacion: new Date().toISOString(),
         mesaId: facturaData.mesa,
         pedidoId: facturaId // Usar el mismo ID como pedido
       }
+      
+      console.log('📤 Factura creada con estado pendiente_cobro:', facturaParaCajero.estado)
       
       console.log('📤 Enviando factura al cajero:', facturaParaCajero)
       

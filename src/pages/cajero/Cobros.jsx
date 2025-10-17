@@ -693,6 +693,25 @@ const CobrosCajero = () => {
               <span>Forzar Pendientes</span>
             </motion.button>
             
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('🧹 Limpiando facturas de prueba...')
+                // Limpiar localStorage
+                localStorage.removeItem('facturasPendientesCajero')
+                localStorage.removeItem('facturasParaReportes')
+                console.log('🧹 localStorage limpiado')
+                toast.success('✅ Facturas de prueba eliminadas')
+                // Refrescar
+                queryClient.invalidateQueries(['facturas'])
+              }}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+            >
+              <span>🧹</span>
+              <span>Limpiar Pruebas</span>
+            </motion.button>
+            
           </div>
         </div>
       </motion.div>
