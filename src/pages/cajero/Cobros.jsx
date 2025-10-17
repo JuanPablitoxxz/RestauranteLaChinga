@@ -53,38 +53,35 @@ const CobrosCajero = () => {
       const facturasAlternativas = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
       console.log('📊 Facturas alternativas:', facturasAlternativas)
       
-      // Crear factura de prueba si no hay ninguna
-      let facturasDePrueba = []
-      if (facturasEnviadasPorClientes.length === 0 && facturasAlternativas.length === 0) {
-        console.log('🧪 Creando factura de prueba...')
-        facturasDePrueba = [{
-          id: Date.now(),
-          numero: 'FAC-TEST-001',
-          cliente: 'Cliente de Prueba',
-          mesa: 5,
-          mesero: 'Mesero de Prueba',
-          total: 250.00,
-          fecha: new Date().toLocaleDateString('es-ES'),
-          hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-          items: [
-            { id: 1, nombre: 'Taco de Prueba', cantidad: 2, precio: 25.00, subtotal: 50.00 }
-          ],
-          subtotal: 200.00,
-          iva: 32.00,
-          propina: 18.00,
-          metodo_pago: 'efectivo',
-          estado: 'pendiente_cobro',
-          enviada_por_cliente: true,
-          fecha_envio: new Date().toISOString(),
-          fechaCreacion: new Date().toISOString(),
-          mesaId: 5,
-          pedidoId: Date.now()
-        }]
-        
-        // Guardar factura de prueba
-        localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasDePrueba))
-        console.log('✅ Factura de prueba creada y guardada')
-      }
+      // SIEMPRE crear factura de prueba para testing
+      console.log('🧪 Creando factura de prueba SIEMPRE...')
+      const facturasDePrueba = [{
+        id: Date.now(),
+        numero: 'FAC-TEST-001',
+        cliente: 'Cliente de Prueba',
+        mesa: 5,
+        mesero: 'Mesero de Prueba',
+        total: 250.00,
+        fecha: new Date().toLocaleDateString('es-ES'),
+        hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+        items: [
+          { id: 1, nombre: 'Taco de Prueba', cantidad: 2, precio: 25.00, subtotal: 50.00 }
+        ],
+        subtotal: 200.00,
+        iva: 32.00,
+        propina: 18.00,
+        metodo_pago: 'efectivo',
+        estado: 'pendiente_cobro',
+        enviada_por_cliente: true,
+        fecha_envio: new Date().toISOString(),
+        fechaCreacion: new Date().toISOString(),
+        mesaId: 5,
+        pedidoId: Date.now()
+      }]
+      
+      // SIEMPRE guardar factura de prueba
+      localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasDePrueba))
+      console.log('✅ Factura de prueba SIEMPRE creada y guardada')
       
       // Combinar todas las facturas
       const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes, ...facturasAlternativas, ...facturasDePrueba]
@@ -682,6 +679,49 @@ const CobrosCajero = () => {
             >
               <span>🔄</span>
               <span>Refrescar</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('📤 Simulando envío de factura desde cliente...')
+                const nuevaFactura = {
+                  id: Date.now(),
+                  numero: `FAC-${Date.now()}`,
+                  cliente: 'Cliente Simulado',
+                  mesa: Math.floor(Math.random() * 24) + 1,
+                  mesero: 'Mesero Simulado',
+                  total: Math.floor(Math.random() * 500) + 100,
+                  fecha: new Date().toLocaleDateString('es-ES'),
+                  hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+                  items: [
+                    { id: 1, nombre: 'Taco Simulado', cantidad: 2, precio: 25.00, subtotal: 50.00 }
+                  ],
+                  subtotal: 200.00,
+                  iva: 32.00,
+                  propina: 18.00,
+                  metodo_pago: 'efectivo',
+                  estado: 'pendiente_cobro',
+                  enviada_por_cliente: true,
+                  fecha_envio: new Date().toISOString(),
+                  fechaCreacion: new Date().toISOString(),
+                  mesaId: Math.floor(Math.random() * 24) + 1,
+                  pedidoId: Date.now()
+                }
+                
+                // Agregar a localStorage
+                const facturasExistentes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+                facturasExistentes.push(nuevaFactura)
+                localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasExistentes))
+                
+                console.log('✅ Factura simulada agregada:', nuevaFactura)
+                queryClient.invalidateQueries(['facturas'])
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+            >
+              <span>📤</span>
+              <span>Simular Cliente</span>
             </motion.button>
           </div>
         </div>
