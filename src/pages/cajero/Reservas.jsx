@@ -106,16 +106,19 @@ const ReservasCajero = () => {
   const { data: mesas } = useQuery({
     queryKey: ['mesas'],
     queryFn: async () => {
+      console.log('🔍 Consultando mesas desde Supabase...')
       const { data, error } = await supabase
         .from('mesas')
         .select('*')
         .order('numero', { ascending: true })
       
       if (error) {
-        console.error('Error al obtener mesas:', error)
+        console.error('❌ Error al obtener mesas:', error)
+        console.log('🔄 Usando datos mock como fallback')
         return mesasMock // Fallback a datos mock
       }
       
+      console.log('✅ Mesas obtenidas de Supabase:', data)
       return data || []
     },
     staleTime: 5 * 60 * 1000
@@ -512,7 +515,7 @@ const ReservasCajero = () => {
           console.log('Reserva creada:', nuevaReserva)
           queryClient.invalidateQueries(['reservas'])
         }}
-        mesasDisponibles={mesas}
+        mesasDisponibles={mesas || []}
       />
     </div>
   )
