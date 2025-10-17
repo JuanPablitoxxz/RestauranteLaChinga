@@ -16,6 +16,20 @@ export const useMeseroAsignaciones = () => {
 
       console.log('🔍 Obteniendo mesas asignadas para mesero:', usuario.id)
 
+      // TEMPORAL: Usar siempre datos mock hasta que Supabase esté configurado
+      console.log('⚠️ Usando datos mock temporalmente')
+      const mesasMock = [
+        { id: 1, numero: 1, capacidad: 2, estado: 'libre', ubicacion: 'interior' },
+        { id: 2, numero: 2, capacidad: 4, estado: 'ocupada', ubicacion: 'interior' },
+        { id: 3, numero: 3, capacidad: 2, estado: 'libre', ubicacion: 'terraza' },
+        { id: 4, numero: 4, capacidad: 6, estado: 'con_pedido', ubicacion: 'interior' },
+        { id: 5, numero: 5, capacidad: 4, estado: 'libre', ubicacion: 'terraza' },
+        { id: 6, numero: 6, capacidad: 2, estado: 'pendiente_pago', ubicacion: 'interior' }
+      ]
+      return mesasMock
+
+      // CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
+      /*
       const { data, error } = await supabase
         .from('asignaciones_meseros')
         .select(`
@@ -65,6 +79,7 @@ export const useMeseroAsignaciones = () => {
       }
 
       return mesasTransformadas
+      */
     },
     enabled: !!usuario?.id && usuario.rol === 'mesero',
     staleTime: 2 * 60 * 1000, // 2 minutos
@@ -81,6 +96,44 @@ export const useMeseroAsignaciones = () => {
 
       console.log('🔔 Obteniendo notificaciones para mesero:', usuario.id)
 
+      // TEMPORAL: Usar siempre datos mock hasta que Supabase esté configurado
+      console.log('⚠️ Usando notificaciones mock temporalmente')
+      const notificacionesMock = [
+        {
+          id: 1,
+          tipo: 'pedido_nuevo',
+          titulo: 'Nuevo pedido - Mesa 2',
+          mensaje: 'El cliente ha realizado un pedido con 3 items',
+          leida: false,
+          prioridad: 'alta',
+          created_at: new Date(Date.now() - 300000).toISOString(), // 5 min atrás
+          datos: { mesaId: 2, pedidoId: 1 }
+        },
+        {
+          id: 2,
+          tipo: 'cliente_termina',
+          titulo: 'Cliente solicita cuenta - Mesa 4',
+          mensaje: 'El cliente solicita la cuenta',
+          leida: false,
+          prioridad: 'alta',
+          created_at: new Date(Date.now() - 600000).toISOString(), // 10 min atrás
+          datos: { mesaId: 4 }
+        },
+        {
+          id: 3,
+          tipo: 'pedido_listo',
+          titulo: 'Pedido listo - Mesa 1',
+          mensaje: 'El pedido está listo para entregar',
+          leida: true,
+          prioridad: 'normal',
+          created_at: new Date(Date.now() - 1800000).toISOString(), // 30 min atrás
+          datos: { mesaId: 1, pedidoId: 3 }
+        }
+      ]
+      return notificacionesMock
+
+      // CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
+      /*
       const { data, error } = await supabase
         .from('notificaciones_meseros')
         .select('*')
@@ -134,6 +187,7 @@ export const useMeseroAsignaciones = () => {
       }
       
       return data || []
+      */
     },
     enabled: !!usuario?.id && usuario.rol === 'mesero',
     staleTime: 1 * 60 * 1000, // 1 minuto
