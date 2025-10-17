@@ -47,6 +47,12 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
     mesa.capacidad >= personas && mesa.estado === 'libre'
   )
 
+  // Debug: mostrar información de mesas
+  console.log('🔍 Debug FormularioReserva:')
+  console.log('- mesasDisponibles:', mesasDisponibles)
+  console.log('- personas:', personas)
+  console.log('- mesasAdecuadas:', mesasAdecuadas)
+
   const onSubmit = async (data) => {
     setIsLoading(true)
     
@@ -293,9 +299,14 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
                 ))}
               </select>
               {mesasAdecuadas.length === 0 && personas > 0 && (
-                <p className="mt-1 text-sm text-yellow-600">
-                  No hay mesas disponibles para {personas} personas
-                </p>
+                <div className="mt-1 text-sm text-yellow-600">
+                  <p>No hay mesas disponibles para {personas} personas</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Mesas totales: {mesasDisponibles.length} | 
+                    Mesas libres: {mesasDisponibles.filter(m => m.estado === 'libre').length} | 
+                    Con capacidad suficiente: {mesasDisponibles.filter(m => m.capacidad >= personas).length}
+                  </p>
+                </div>
               )}
             </div>
           </div>
