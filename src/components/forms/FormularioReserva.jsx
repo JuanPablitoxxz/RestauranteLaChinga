@@ -116,7 +116,8 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
       // Crear usuario temporal en la tabla usuarios
       const usuarioTemporalData = {
         email: usuarioTemporal,
-        password_hash: `temp_hash_${passwordTemporal}_${timestamp}`,
+        password: passwordTemporal, // Contraseña directa para login simple
+        password_hash: `temp_hash_${passwordTemporal}_${timestamp}`, // Hash como respaldo
         nombre: data.cliente_nombre,
         apellido: 'Temporal',
         rol: 'cliente',

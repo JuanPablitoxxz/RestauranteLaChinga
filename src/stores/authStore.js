@@ -18,15 +18,9 @@ export const useAuthStore = create(
         set({ isLoading: true })
         
         try {
-          // Autenticación con Supabase
-          const { data, error } = await auth.signIn(email, password)
+          console.log('🔍 Intentando login con:', { email, rol })
           
-          if (error) {
-            set({ isLoading: false })
-            return { success: false, error: error.message }
-          }
-
-          // Obtener datos del usuario desde la base de datos
+          // Buscar usuario en la tabla usuarios
           const { data: usuarioData, error: userError } = await supabase
             .from('usuarios')
             .select('*')
@@ -35,12 +29,6 @@ export const useAuthStore = create(
 
           if (userError) {
             console.error('Error al buscar usuario:', userError)
-            console.error('Detalles del error:', {
-              message: userError.message,
-              details: userError.details,
-              hint: userError.hint,
-              code: userError.code
-            })
             set({ isLoading: false })
             return { success: false, error: `Error al buscar usuario: ${userError.message}` }
           }
@@ -48,13 +36,40 @@ export const useAuthStore = create(
           if (!usuarioData) {
             console.error('Usuario no encontrado:', email)
             set({ isLoading: false })
-            return { success: false, error: 'Usuario no encontrado en la base de datos. Verifica que el usuario esté creado en Supabase.' }
+            return { success: false, error: 'Usuario no encontrado en la base de datos' }
+          }
+
+          // Verificar contraseña (comparar con password_hash o password)
+          const passwordValida = usuarioData.password === password || 
+                                usuarioData.password_hash?.includes(password)
+          
+          if (!passwordValida) {
+            console.error('Contraseña incorrecta para:', email)
+            set({ isLoading: false })
+            return { success: false, error: 'Contraseña incorrecta' }
           }
 
           // Verificar que el rol coincida
           if (usuarioData.rol !== rol) {
             set({ isLoading: false })
             return { success: false, error: 'Rol incorrecto' }
+          }
+
+          // Verificar si el usuario está activo
+          if (!usuarioData.activo) {
+            set({ isLoading: false })
+            return { success: false, error: 'Usuario inactivo' }
+          }
+
+          // Verificar si es usuario temporal y no ha expirado
+          if (usuarioData.es_temporal && usuarioData.fecha_expiracion) {
+            const fechaExpiracion = new Date(usuarioData.fecha_expiracion)
+            const ahora = new Date()
+            
+            if (ahora > fechaExpiracion) {
+              set({ isLoading: false })
+              return { success: false, error: 'Credenciales temporales expiradas' }
+            }
           }
 
           const usuario = {
@@ -65,31 +80,29 @@ export const useAuthStore = create(
             rol: usuarioData.rol,
             turno: usuarioData.turno,
             activo: usuarioData.activo,
+            es_temporal: usuarioData.es_temporal,
             avatar: `https://ui-avatars.com/api/?name=${usuarioData.nombre}&background=c62828&color=fff`
           }
           
           set({
             usuario,
-            token: data.session?.access_token,
+            token: `mock_token_${Date.now()}`, // Token mock para usuarios temporales
             rol: usuarioData.rol,
             isAuthenticated: true,
             isLoading: false
           })
 
+          console.log('✅ Login exitoso:', usuario)
           return { success: true, usuario }
         } catch (error) {
+          console.error('Error en login:', error)
           set({ isLoading: false })
           return { success: false, error: error.message }
         }
       },
 
       logout: async () => {
-        try {
-          await auth.signOut()
-        } catch (error) {
-          console.error('Error al cerrar sesión:', error)
-        }
-        
+        console.log('🚪 Cerrando sesión...')
         set({
           usuario: null,
           token: null,
