@@ -67,8 +67,8 @@ const NavBar = ({ onToggleSidebar, sidebarAbierto }) => {
 
           {/* Lado derecho */}
           <div className="flex items-center space-x-4">
-            {/* Selector de turno (solo para roles que lo necesitan) */}
-            {turno && (
+            {/* Selector de turno (solo para roles que lo necesitan, NO para clientes) */}
+            {turno && rol !== 'cliente' && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-neutral-600">Turno:</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
