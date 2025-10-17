@@ -40,10 +40,17 @@ const CobrosCajero = () => {
       // Obtener facturas enviadas por clientes
       const facturasEnviadasPorClientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
       console.log('📤 Facturas enviadas por clientes:', facturasEnviadasPorClientes)
+      console.log('📤 Detalle de facturas enviadas:', JSON.stringify(facturasEnviadasPorClientes, null, 2))
+      
+      // Verificar localStorage directamente
+      const rawData = localStorage.getItem('facturasPendientesCajero')
+      console.log('🔍 Raw localStorage data:', rawData)
       
       // Combinar facturas mock con facturas enviadas por clientes
       const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes]
       console.log('📋 Total facturas combinadas:', facturasCombinadas.length)
+      console.log('📋 Facturas mock:', facturasMock.length)
+      console.log('📋 Facturas enviadas:', facturasEnviadasPorClientes.length)
       
       // Ordenar por fecha de creación (más recientes primero)
       const facturasOrdenadas = facturasCombinadas.sort((a, b) => {
@@ -53,6 +60,7 @@ const CobrosCajero = () => {
       })
       
       console.log('✅ Facturas ordenadas:', facturasOrdenadas)
+      console.log('✅ Facturas con estado pendiente_cobro:', facturasOrdenadas.filter(f => f.estado === 'pendiente_cobro'))
       return facturasOrdenadas
     },
     staleTime: 30 * 1000, // Reducir tiempo de caché para actualizaciones más frecuentes
@@ -532,7 +540,7 @@ const CobrosCajero = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        className="grid grid-cols-2 md:grid-cols-5 gap-4"
       >
         {[
           { 
@@ -544,6 +552,11 @@ const CobrosCajero = () => {
             label: 'Pendientes', 
             valor: estadisticas.pendientes, 
             color: 'bg-yellow-100 text-yellow-800' 
+          },
+          { 
+            label: 'Enviadas por Cliente', 
+            valor: facturas?.filter(f => f.estado === 'pendiente_cobro').length || 0, 
+            color: 'bg-purple-100 text-purple-800' 
           },
           { 
             label: 'Pagadas', 
@@ -603,16 +616,31 @@ const CobrosCajero = () => {
             ))}
           </div>
 
-          {/* Búsqueda */}
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
-            <input
-              type="text"
-              placeholder="Buscar por ID o mesa..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
+          {/* Búsqueda y refrescar */}
+          <div className="flex space-x-3">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Buscar por ID o mesa..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('🔄 Refrescando manualmente...')
+                queryClient.invalidateQueries(['facturas'])
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+            >
+              <span>🔄</span>
+              <span>Refrescar</span>
+            </motion.button>
           </div>
         </div>
       </motion.div>
