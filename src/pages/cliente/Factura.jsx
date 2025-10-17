@@ -397,25 +397,6 @@ const Factura = () => {
           <span>Compartir</span>
         </motion.button>
         
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            console.log('🔍 DEBUG CLIENTE - Verificando localStorage:')
-            const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
-            const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
-            
-            console.log('🔍 Facturas pendientes:', facturasPendientes)
-            console.log('🔍 Facturas reportes:', facturasReportes)
-            console.log('🔍 Total facturas:', facturasPendientes.length + facturasReportes.length)
-            
-            alert(`🔍 DEBUG CLIENTE:\n\nFacturas pendientes: ${facturasPendientes.length}\nFacturas reportes: ${facturasReportes.length}\nTotal: ${facturasPendientes.length + facturasReportes.length}`)
-          }}
-          className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
-        >
-          <span>🔍</span>
-          <span>Debug Cliente</span>
-        </motion.button>
       </motion.div>
 
       {/* Información adicional */}

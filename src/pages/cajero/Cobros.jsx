@@ -672,123 +672,7 @@ const CobrosCajero = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                console.log('🔍 DEBUG COMPLETO DEL CAJERO:')
-                
-                // Verificar localStorage directamente
-                const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
-                const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
-                
-                console.log('🔍 localStorage facturasPendientesCajero:', facturasPendientes)
-                console.log('🔍 localStorage facturasParaReportes:', facturasReportes)
-                console.log('🔍 Total facturas en localStorage:', facturasPendientes.length + facturasReportes.length)
-                
-                // Verificar facturas del query
-                console.log('🔍 Facturas del query:', facturas)
-                console.log('🔍 Número de facturas del query:', facturas?.length)
-                
-                // Mostrar todas las claves de localStorage
-                console.log('🔍 Todas las claves localStorage:', Object.keys(localStorage))
-                
-                // Debug detallado de cada factura
-                if (facturas) {
-                  console.log('🔍 DETALLE DE FACTURAS:')
-                  facturas.forEach((factura, index) => {
-                    console.log(`🔍 Factura ${index + 1}:`, {
-                      id: factura.id,
-                      numero: factura.numero,
-                      cliente: factura.cliente,
-                      estado: factura.estado,
-                      enviada_por_cliente: factura.enviada_por_cliente,
-                      fecha_envio: factura.fecha_envio
-                    })
-                  })
-                }
-                
-                // Mostrar alerta con resumen
-                const totalFacturas = facturasPendientes.length + facturasReportes.length
-                alert(`🔍 DEBUG RESUMEN:\n\nFacturas en localStorage: ${totalFacturas}\nFacturas pendientes: ${facturasPendientes.length}\nFacturas reportes: ${facturasReportes.length}\nFacturas en query: ${facturas?.length || 0}`)
-              }}
-              className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
-            >
-              <span>🔍</span>
-              <span>Debug</span>
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                console.log('🔧 Forzando facturas como pendientes...')
-                if (facturasCompartidas && facturasCompartidas.length > 0) {
-                  facturasCompartidas.forEach(factura => {
-                    if (factura.enviada_por_cliente) {
-                      console.log('🔧 Actualizando factura:', factura.id, 'a estado pendiente_cobro')
-                      actualizarFactura(factura.id, { estado: 'pendiente_cobro' })
-                    }
-                  })
-                  toast.success('✅ Facturas actualizadas como pendientes')
-                } else {
-                  toast.error('❌ No hay facturas para actualizar')
-                }
-              }}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-            >
-              <span>🔧</span>
-              <span>Forzar Pendientes</span>
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                console.log('🧹 Limpiando facturas de prueba...')
-                // Limpiar localStorage
-                localStorage.removeItem('facturasPendientesCajero')
-                localStorage.removeItem('facturasParaReportes')
-                console.log('🧹 localStorage limpiado')
-                toast.success('✅ Facturas de prueba eliminadas')
-                // Refrescar
-                queryClient.invalidateQueries(['facturas'])
-              }}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
-            >
-              <span>🧹</span>
-              <span>Limpiar Pruebas</span>
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                console.log('🔄 Forzando sincronización completa...')
-                // Forzar actualización del hook
-                const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
-                const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
-                
-                console.log('🔄 Facturas en localStorage:', facturasPendientes.length + facturasReportes.length)
-                console.log('🔄 Facturas pendientes:', facturasPendientes)
-                console.log('🔄 Facturas reportes:', facturasReportes)
-                
-                // Disparar evento personalizado para forzar actualización
-                window.dispatchEvent(new CustomEvent('forzarSincronizacion', { 
-                  detail: { timestamp: Date.now() }
-                }))
-                
-                // Refrescar query
-                queryClient.invalidateQueries(['facturas'])
-                toast.success('✅ Sincronización forzada')
-              }}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
-            >
-              <span>🔄</span>
-              <span>Forzar Sync</span>
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                console.log('🔄 SOLUCIÓN DIRECTA - Copiando facturas del cliente...')
+                console.log('🧪 Creando 5 facturas de prueba...')
                 
                 // Crear facturas de prueba directamente
                 const facturasDePrueba = []
@@ -831,7 +715,7 @@ const CobrosCajero = () => {
               className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
             >
               <span>🧪</span>
-              <span>Crear Pruebas</span>
+              <span>Crear 5 Facturas</span>
             </motion.button>
             
           </div>
