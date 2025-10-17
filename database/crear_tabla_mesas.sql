@@ -20,21 +20,18 @@ CREATE TABLE IF NOT EXISTS mesas (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Crear trigger para updated_at (solo si no existe)
+-- 3. Crear función para updated_at (solo si no existe)
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- 4. Crear trigger para updated_at (solo si no existe)
 DO $$
 BEGIN
-    -- Crear función si no existe
-    IF NOT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'update_updated_at_column') THEN
-        CREATE OR REPLACE FUNCTION update_updated_at_column()
-        RETURNS TRIGGER AS $$
-        BEGIN
-            NEW.updated_at = NOW();
-            RETURN NEW;
-        END;
-        $$ language 'plpgsql';
-    END IF;
-    
-    -- Crear trigger si no existe
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_mesas_updated_at') THEN
         CREATE TRIGGER update_mesas_updated_at 
             BEFORE UPDATE ON mesas 
@@ -43,7 +40,7 @@ BEGIN
     END IF;
 END $$;
 
--- 4. Insertar mesas de ejemplo (24 mesas)
+-- 5. Insertar mesas de ejemplo (24 mesas)
 INSERT INTO mesas (numero, capacidad, ubicacion, estado) VALUES
 (1, 2, 'interior', 'libre'),
 (2, 2, 'interior', 'libre'),
@@ -71,7 +68,7 @@ INSERT INTO mesas (numero, capacidad, ubicacion, estado) VALUES
 (24, 2, 'barra', 'libre')
 ON CONFLICT (numero) DO NOTHING;
 
--- 5. Verificar que las mesas se crearon correctamente
+-- 6. Verificar que las mesas se crearon correctamente
 SELECT 'MESAS CREADAS:' as info;
 SELECT 
     id,
@@ -83,7 +80,7 @@ SELECT
 FROM mesas 
 ORDER BY numero;
 
--- 6. Mostrar estadísticas
+-- 7. Mostrar estadísticas
 SELECT 'ESTADÍSTICAS DE MESAS:' as info;
 SELECT 
     estado,
