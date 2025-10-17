@@ -11,13 +11,15 @@ import {
   MapPinIcon,
   PhoneIcon,
   EnvelopeIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  PaperAirplaneIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 const Factura = () => {
   const navigate = useNavigate()
   const [isGenerandoPDF, setIsGenerandoPDF] = useState(false)
+  const [isEnviandoCajero, setIsEnviandoCajero] = useState(false)
 
   // Datos mock de la factura
   const facturaData = {
@@ -95,6 +97,46 @@ const Factura = () => {
       navigator.clipboard.writeText(textoFactura).then(() => {
         toast.success('Información de la factura copiada al portapapeles')
       })
+    }
+  }
+
+  const enviarFacturaAlCajero = async () => {
+    setIsEnviandoCajero(true)
+    
+    try {
+      // Simular envío al cajero
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Aquí se guardaría en la base de datos para que aparezca en la sección de cobros del cajero
+      const facturaParaCajero = {
+        id: Date.now(),
+        numero: facturaData.numero,
+        cliente: facturaData.cliente,
+        mesa: facturaData.mesa,
+        mesero: facturaData.mesero,
+        total: facturaData.total,
+        fecha: facturaData.fecha,
+        hora: facturaData.hora,
+        items: facturaData.items,
+        subtotal: facturaData.subtotal,
+        iva: facturaData.iva,
+        propina: facturaData.propina,
+        metodo_pago: facturaData.metodo_pago,
+        estado: 'pendiente_cobro',
+        enviada_por_cliente: true,
+        fecha_envio: new Date().toISOString()
+      }
+      
+      // Guardar en localStorage para simular base de datos
+      const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      facturasPendientes.push(facturaParaCajero)
+      localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasPendientes))
+      
+      toast.success('Factura enviada al cajero exitosamente')
+    } catch (error) {
+      toast.error('Error al enviar la factura al cajero')
+    } finally {
+      setIsEnviandoCajero(false)
     }
   }
 
@@ -285,6 +327,26 @@ const Factura = () => {
             <>
               <ArrowDownTrayIcon className="h-4 w-4" />
               <span>Descargar PDF</span>
+            </>
+          )}
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={enviarFacturaAlCajero}
+          disabled={isEnviandoCajero}
+          className="bg-mexico-verde-600 hover:bg-mexico-verde-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isEnviandoCajero ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>Enviando...</span>
+            </>
+          ) : (
+            <>
+              <PaperAirplaneIcon className="h-4 w-4" />
+              <span>Enviar al Cajero</span>
             </>
           )}
         </motion.button>

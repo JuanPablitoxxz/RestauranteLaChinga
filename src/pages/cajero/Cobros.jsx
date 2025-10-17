@@ -15,7 +15,8 @@ import {
   PrinterIcon,
   DocumentTextIcon,
   XMarkIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  PaperAirplaneIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -33,7 +34,18 @@ const CobrosCajero = () => {
   // Obtener facturas
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
     queryKey: ['facturas'],
-    queryFn: () => facturasMock,
+    queryFn: () => {
+      // Combinar facturas mock con facturas enviadas por clientes
+      const facturasEnviadasPorClientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes]
+      
+      // Ordenar por fecha de creación (más recientes primero)
+      return facturasCombinadas.sort((a, b) => {
+        const fechaA = new Date(a.fechaCreacion || a.fecha_envio || Date.now())
+        const fechaB = new Date(b.fechaCreacion || b.fecha_envio || Date.now())
+        return fechaB - fechaA
+      })
+    },
     staleTime: 5 * 60 * 1000
   })
 
@@ -87,6 +99,13 @@ const CobrosCajero = () => {
           color: 'text-yellow-600', 
           bgColor: 'bg-yellow-100',
           icono: ClockIcon 
+        }
+      case 'pendiente_cobro':
+        return { 
+          texto: 'Enviada por Cliente', 
+          color: 'text-blue-600', 
+          bgColor: 'bg-blue-100',
+          icono: PaperAirplaneIcon 
         }
       case 'cancelada':
         return { 
@@ -525,6 +544,7 @@ const CobrosCajero = () => {
           <div className="flex space-x-2">
             {[
               { value: 'pendientes', label: 'Pendientes' },
+              { value: 'pendiente_cobro', label: 'Enviadas por Cliente' },
               { value: 'pagadas', label: 'Pagadas' },
               { value: 'todas', label: 'Todas' }
             ].map((filtroOption) => (
@@ -603,10 +623,13 @@ const CobrosCajero = () => {
                     
                     <div>
                       <h3 className="font-semibold text-neutral-800">
-                        Factura #{factura.id}
+                        Factura #{factura.numero || factura.id}
                       </h3>
                       <p className="text-sm text-neutral-600">
-                        Mesa {factura.mesaId} • {format(new Date(factura.fechaCreacion), 'dd/MM/yyyy HH:mm', { locale: es })}
+                        Mesa {factura.mesa || factura.mesaId} • {format(new Date(factura.fechaCreacion || factura.fecha_envio), 'dd/MM/yyyy HH:mm', { locale: es })}
+                        {factura.enviada_por_cliente && (
+                          <span className="ml-2 text-blue-600 font-medium">• Enviada por cliente</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -624,9 +647,12 @@ const CobrosCajero = () => {
                   <div>
                     <h4 className="font-medium text-neutral-800 mb-2">Pedido</h4>
                     <div className="space-y-1 text-sm text-neutral-600">
-                      <p>ID: #{factura.pedidoId}</p>
-                      <p>Items: {pedido?.items?.length || 0}</p>
-                      <p>Mesero: Carlos Mendoza</p>
+                      <p>ID: #{factura.pedidoId || 'N/A'}</p>
+                      <p>Items: {factura.items?.length || pedido?.items?.length || 0}</p>
+                      <p>Mesero: {factura.mesero || 'Carlos Mendoza'}</p>
+                      {factura.cliente && (
+                        <p>Cliente: {factura.cliente}</p>
+                      )}
                     </div>
                   </div>
 
@@ -636,15 +662,21 @@ const CobrosCajero = () => {
                     <div className="space-y-1 text-sm text-neutral-600">
                       <div className="flex justify-between">
                         <span>Subtotal:</span>
-                        <span>${factura.subtotal.toLocaleString()}</span>
+                        <span>${(factura.subtotal || 0).toLocaleString()}</span>
                       </div>
+                      {factura.iva > 0 && (
+                        <div className="flex justify-between">
+                          <span>IVA (16%):</span>
+                          <span>${(factura.iva || 0).toLocaleString()}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span>Propina:</span>
-                        <span>${factura.propina.toLocaleString()}</span>
+                        <span>${(factura.propina || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between font-semibold text-neutral-800">
                         <span>Total:</span>
-                        <span>${factura.total.toLocaleString()}</span>
+                        <span>${(factura.total || 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -668,7 +700,7 @@ const CobrosCajero = () => {
 
                 {/* Acciones */}
                 <div className="flex flex-wrap gap-2">
-                  {factura.estado === 'pendiente' && (
+                  {(factura.estado === 'pendiente' || factura.estado === 'pendiente_cobro') && (
                     <>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
