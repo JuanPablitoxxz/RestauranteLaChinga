@@ -39,9 +39,8 @@ export const useAuthStore = create(
             return { success: false, error: 'Usuario no encontrado en la base de datos' }
           }
 
-          // Verificar contraseña (comparar con password_hash o password)
-          const passwordValida = usuarioData.password === password || 
-                                usuarioData.password_hash?.includes(password)
+          // Verificar contraseña (comparar con password_hash)
+          const passwordValida = usuarioData.password_hash === password
           
           if (!passwordValida) {
             console.error('Contraseña incorrecta para:', email)
