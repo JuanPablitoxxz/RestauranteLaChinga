@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAppStore } from '../../stores/appStore'
-import { useMeseroAsignaciones } from '../../hooks/useMeseroAsignaciones'
 import toast from 'react-hot-toast'
 import { 
   BellIcon,
@@ -20,12 +17,8 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 const NotificacionesMesero = () => {
-  const { notificaciones: notificacionesLocales, marcarComoLeida, removerNotificacion, limpiarNotificaciones } = useAppStore()
-  const queryClient = useQueryClient()
   const [filtro, setFiltro] = useState('todas') // todas, no_leidas, leidas
-
-  // TEMPORAL: Usar datos mock directamente
-  const notificacionesServidor = [
+  const [notificaciones, setNotificaciones] = useState([
     {
       id: 1,
       tipo: 'pedido_nuevo',
@@ -56,15 +49,9 @@ const NotificacionesMesero = () => {
       created_at: new Date(Date.now() - 1800000).toISOString(), // 30 min atrás
       datos: { mesaId: 1, pedidoId: 3 }
     }
-  ]
+  ])
 
-  // Combinar notificaciones locales y del servidor
-  const todasLasNotificaciones = [
-    ...notificacionesLocales,
-    ...(notificacionesServidor || [])
-  ].sort((a, b) => new Date(b.created_at || b.timestamp) - new Date(a.created_at || a.timestamp))
-
-  const notificacionesFiltradas = todasLasNotificaciones.filter(notif => {
+  const notificacionesFiltradas = notificaciones.filter(notif => {
     switch (filtro) {
       case 'no_leidas':
         return !notif.leida
@@ -75,7 +62,7 @@ const NotificacionesMesero = () => {
     }
   })
 
-  const notificacionesNoLeidas = todasLasNotificaciones.filter(n => !n.leida).length
+  const notificacionesNoLeidas = notificaciones.filter(n => !n.leida).length
 
   const obtenerIconoTipo = (tipo) => {
     switch (tipo) {
@@ -111,138 +98,120 @@ const NotificacionesMesero = () => {
     }
   }
 
-  const marcarComoLeidaHandler = (notificacionId) => {
-    // TEMPORAL: Solo usar store local
-    marcarComoLeida(notificacionId)
+  const marcarComoLeida = (notificacionId) => {
+    setNotificaciones(prev => 
+      prev.map(notif => 
+        notif.id === notificacionId 
+          ? { ...notif, leida: true }
+          : notif
+      )
+    )
     toast.success('Notificación marcada como leída')
   }
 
   const eliminarNotificacion = (notificacionId) => {
-    removerNotificacion(notificacionId)
+    setNotificaciones(prev => prev.filter(notif => notif.id !== notificacionId))
     toast.success('Notificación eliminada')
   }
 
   const limpiarTodas = () => {
-    limpiarNotificaciones()
-    toast.success('Todas las notificaciones han sido limpiadas')
-  }
-
-  const marcarTodasComoLeidas = () => {
-    todasLasNotificaciones.forEach(notif => {
-      if (!notif.leida) {
-        marcarComoLeida(notif.id)
-      }
-    })
-    toast.success('Todas las notificaciones marcadas como leídas')
+    setNotificaciones([])
+    toast.success('Todas las notificaciones eliminadas')
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="text-center"
       >
-        <div>
-          <h1 className="text-3xl font-bold text-primary-800 mb-2">
-            Notificaciones
-          </h1>
-          <p className="text-neutral-600">
-            Mantente al día con las actividades del restaurante
-          </p>
-        </div>
-
-        {notificacionesNoLeidas > 0 && (
-          <div className="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium">
-            {notificacionesNoLeidas} no leídas
-          </div>
-        )}
+        <h1 className="text-3xl font-bold text-primary-800 mb-2">
+          Notificaciones
+        </h1>
+        <p className="text-neutral-600">
+          Gestiona las notificaciones de tus mesas
+        </p>
       </motion.div>
 
-      {/* Filtros y acciones */}
+      {/* Estadísticas */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Filtros */}
-          <div className="flex space-x-2">
-            {[
-              { value: 'todas', label: 'Todas' },
-              { value: 'no_leidas', label: 'No leídas' },
-              { value: 'leidas', label: 'Leídas' }
-            ].map((filtroOption) => (
-              <motion.button
-                key={filtroOption.value}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setFiltro(filtroOption.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  filtro === filtroOption.value
-                    ? 'bg-primary-100 text-primary-800'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                }`}
-              >
-                {filtroOption.label}
-              </motion.button>
-            ))}
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-2">
+            {notificaciones.length}
           </div>
-
-          {/* Acciones */}
-          <div className="flex space-x-2">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={marcarTodasComoLeidas}
-              disabled={notificacionesNoLeidas === 0}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                notificacionesNoLeidas === 0
-                  ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-                  : 'bg-green-100 text-green-800 hover:bg-green-200'
-              }`}
-            >
-              Marcar todas como leídas
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={limpiarTodas}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-all duration-200"
-            >
-              Limpiar todas
-            </motion.button>
-          </div>
+          <p className="text-sm text-neutral-600">Total</p>
         </div>
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 mb-2">
+            {notificacionesNoLeidas}
+          </div>
+          <p className="text-sm text-neutral-600">No leídas</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 mb-2">
+            {notificaciones.length - notificacionesNoLeidas}
+          </div>
+          <p className="text-sm text-neutral-600">Leídas</p>
+        </div>
+      </motion.div>
+
+      {/* Filtros */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-wrap gap-2"
+      >
+        {[
+          { key: 'todas', label: 'Todas' },
+          { key: 'no_leidas', label: 'No leídas' },
+          { key: 'leidas', label: 'Leídas' }
+        ].map((filtroOption) => (
+          <button
+            key={filtroOption.key}
+            onClick={() => setFiltro(filtroOption.key)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filtro === filtroOption.key
+                ? 'bg-primary-600 text-white'
+                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+            }`}
+          >
+            {filtroOption.label}
+          </button>
+        ))}
+        
+        <button
+          onClick={limpiarTodas}
+          className="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+        >
+          Limpiar todas
+        </button>
       </motion.div>
 
       {/* Lista de notificaciones */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.3 }}
         className="space-y-4"
       >
         {notificacionesFiltradas.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-neutral-200">
-            <BellIcon className="h-16 w-16 text-neutral-300 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-neutral-800 mb-2">
-              No hay notificaciones
-            </h2>
-            <p className="text-neutral-600">
-              {filtro === 'todas' 
-                ? 'No tienes notificaciones por el momento'
-                : `No hay notificaciones ${filtro === 'no_leidas' ? 'no leídas' : 'leídas'}`
-              }
-            </p>
+          <div className="text-center py-12">
+            <BellIcon className="h-12 w-12 text-neutral-400 mx-auto mb-4" />
+            <p className="text-neutral-600">No hay notificaciones</p>
           </div>
         ) : (
           notificacionesFiltradas.map((notificacion, index) => {
             const iconoTipo = obtenerIconoTipo(notificacion.tipo)
             const IconoTipo = iconoTipo.icono
+            const colorTipo = obtenerColorTipo(notificacion.tipo)
             
             return (
               <motion.div
@@ -250,170 +219,69 @@ const NotificacionesMesero = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
-                className={`bg-white rounded-xl shadow-sm border-l-4 ${obtenerColorTipo(notificacion.tipo)} border border-neutral-200 p-6 ${
-                  !notificacion.leida ? 'bg-blue-50' : ''
+                className={`bg-white rounded-lg shadow-sm border-l-4 ${colorTipo} border border-neutral-200 p-4 ${
+                  !notificacion.leida ? 'ring-2 ring-primary-100' : ''
                 }`}
               >
-                <div className="flex items-start space-x-4">
-                  {/* Icono */}
-                  <div className={`p-3 rounded-lg ${iconoTipo.bgColor}`}>
-                    <IconoTipo className={`h-6 w-6 ${iconoTipo.color}`} />
-                  </div>
-
-                  {/* Contenido */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-neutral-800 mb-1">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3 flex-1">
+                    <div className={`p-2 rounded-lg ${iconoTipo.bgColor}`}>
+                      <IconoTipo className={`h-5 w-5 ${iconoTipo.color}`} />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h3 className="font-semibold text-neutral-800">
                           {notificacion.titulo}
                         </h3>
-                        <p className="text-neutral-600 mb-2">
-                          {notificacion.mensaje}
-                        </p>
-                        <div className="flex items-center space-x-4 text-sm text-neutral-500">
-                          <span>
-                            {format(new Date(notificacion.timestamp), 'dd/MM/yyyy HH:mm', { locale: es })}
-                          </span>
-                          {!notificacion.leida && (
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                              Nueva
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Acciones */}
-                      <div className="flex items-center space-x-2">
                         {!notificacion.leida && (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => marcarComoLeidaHandler(notificacion.id)}
-                            className="p-2 rounded-lg hover:bg-green-100 text-green-600 transition-colors"
-                            title="Marcar como leída"
-                          >
-                            <EyeIcon className="h-4 w-4" />
-                          </motion.button>
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                         )}
-                        
-                        {notificacion.leida && (
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => marcarComoLeidaHandler(notificacion.id)}
-                            className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-600 transition-colors"
-                            title="Marcar como no leída"
-                          >
-                            <EyeSlashIcon className="h-4 w-4" />
-                          </motion.button>
-                        )}
-                        
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => eliminarNotificacion(notificacion.id)}
-                          className="p-2 rounded-lg hover:bg-red-100 text-red-600 transition-colors"
-                          title="Eliminar notificación"
-                        >
-                          <XMarkIcon className="h-4 w-4" />
-                        </motion.button>
+                      </div>
+                      
+                      <p className="text-neutral-600 text-sm mb-2">
+                        {notificacion.mensaje}
+                      </p>
+                      
+                      <div className="flex items-center space-x-4 text-xs text-neutral-500">
+                        <span>
+                          {format(new Date(notificacion.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          notificacion.prioridad === 'alta' ? 'bg-red-100 text-red-800' :
+                          notificacion.prioridad === 'normal' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {notificacion.prioridad}
+                        </span>
                       </div>
                     </div>
-
-                    {/* Acciones específicas por tipo */}
-                    {notificacion.datos && (
-                      <div className="mt-4 pt-4 border-t border-neutral-200">
-                        <div className="flex space-x-2">
-                          {notificacion.tipo === 'pedido_nuevo' && (
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="btn-primary text-sm"
-                            >
-                              Ver Pedido
-                            </motion.button>
-                          )}
-                          
-                          {notificacion.tipo === 'cliente_termina' && (
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="btn-success text-sm"
-                            >
-                              Procesar Cuenta
-                            </motion.button>
-                          )}
-                          
-                          {notificacion.tipo === 'reserva_nueva' && (
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="btn-secondary text-sm"
-                            >
-                              Ver Reserva
-                            </motion.button>
-                          )}
-                          
-                          {notificacion.tipo === 'pedido_listo' && (
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="btn-primary text-sm"
-                            >
-                              Entregar Pedido
-                            </motion.button>
-                          )}
-                        </div>
-                      </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    {!notificacion.leida && (
+                      <button
+                        onClick={() => marcarComoLeida(notificacion.id)}
+                        className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+                        title="Marcar como leída"
+                      >
+                        <CheckIcon className="h-4 w-4" />
+                      </button>
                     )}
+                    
+                    <button
+                      onClick={() => eliminarNotificacion(notificacion.id)}
+                      className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                      title="Eliminar"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </motion.div>
             )
           })
         )}
-      </motion.div>
-
-      {/* Estadísticas */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6"
-      >
-        <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-          Estadísticas
-        </h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary-800">
-              {todasLasNotificaciones.length}
-            </div>
-            <div className="text-sm text-neutral-600">Total</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {notificacionesNoLeidas}
-            </div>
-            <div className="text-sm text-neutral-600">No leídas</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {todasLasNotificaciones.filter(n => n.leida).length}
-            </div>
-            <div className="text-sm text-neutral-600">Leídas</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">
-              {todasLasNotificaciones.filter(n => n.tipo === 'pedido_nuevo').length}
-            </div>
-            <div className="text-sm text-neutral-600">Pedidos</div>
-          </div>
-        </div>
       </motion.div>
     </div>
   )
