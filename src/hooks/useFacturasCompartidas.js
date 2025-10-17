@@ -10,6 +10,9 @@ export const useFacturasCompartidas = () => {
       const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
       const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
       
+      console.log('🔍 useFacturasCompartidas - Raw facturasPendientes:', facturasPendientes)
+      console.log('🔍 useFacturasCompartidas - Raw facturasReportes:', facturasReportes)
+      
       // Combinar y eliminar duplicados
       const todasLasFacturas = [...facturasPendientes, ...facturasReportes]
       const facturasUnicas = todasLasFacturas.filter((factura, index, self) => 
@@ -17,6 +20,7 @@ export const useFacturasCompartidas = () => {
       )
       
       console.log('🔍 useFacturasCompartidas - Facturas obtenidas:', facturasUnicas)
+      console.log('🔍 useFacturasCompartidas - Número de facturas:', facturasUnicas.length)
       return facturasUnicas
     } catch (error) {
       console.error('❌ Error al obtener facturas:', error)
@@ -98,9 +102,18 @@ export const useFacturasCompartidas = () => {
       setFacturas(nuevasFacturas)
     }
 
+    const manejarSincronizacionForzada = (event) => {
+      console.log('🔄 Evento forzarSincronizacion recibido:', event.detail)
+      console.log('🔄 Forzando actualización de facturas...')
+      const nuevasFacturas = obtenerFacturas()
+      console.log('🔄 Facturas obtenidas en sincronización:', nuevasFacturas.length)
+      setFacturas(nuevasFacturas)
+    }
+
     // Agregar listeners
     window.addEventListener('facturaEnviada', manejarFacturaEnviada)
     window.addEventListener('facturaActualizada', manejarFacturaActualizada)
+    window.addEventListener('forzarSincronizacion', manejarSincronizacionForzada)
 
     // Cargar facturas iniciales
     const facturasIniciales = obtenerFacturas()
@@ -111,6 +124,7 @@ export const useFacturasCompartidas = () => {
     return () => {
       window.removeEventListener('facturaEnviada', manejarFacturaEnviada)
       window.removeEventListener('facturaActualizada', manejarFacturaActualizada)
+      window.removeEventListener('forzarSincronizacion', manejarSincronizacionForzada)
     }
   }, [])
 

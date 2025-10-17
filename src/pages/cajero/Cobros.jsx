@@ -712,6 +712,34 @@ const CobrosCajero = () => {
               <span>Limpiar Pruebas</span>
             </motion.button>
             
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('🔄 Forzando sincronización completa...')
+                // Forzar actualización del hook
+                const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+                const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+                
+                console.log('🔄 Facturas en localStorage:', facturasPendientes.length + facturasReportes.length)
+                console.log('🔄 Facturas pendientes:', facturasPendientes)
+                console.log('🔄 Facturas reportes:', facturasReportes)
+                
+                // Disparar evento personalizado para forzar actualización
+                window.dispatchEvent(new CustomEvent('forzarSincronizacion', { 
+                  detail: { timestamp: Date.now() }
+                }))
+                
+                // Refrescar query
+                queryClient.invalidateQueries(['facturas'])
+                toast.success('✅ Sincronización forzada')
+              }}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+            >
+              <span>🔄</span>
+              <span>Forzar Sync</span>
+            </motion.button>
+            
           </div>
         </div>
       </motion.div>
