@@ -131,6 +131,7 @@ const Login = () => {
                 type="email"
                 className="input-field mt-1"
                 placeholder="tu@email.com"
+                autoComplete="username"
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -154,6 +155,7 @@ const Login = () => {
                   type={mostrarPassword ? 'text' : 'password'}
                   className="input-field pr-10"
                   placeholder="Tu contraseña"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
