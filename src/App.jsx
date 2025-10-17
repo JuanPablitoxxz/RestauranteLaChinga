@@ -154,7 +154,7 @@ function App() {
                   <Route path="dashboard" element={<DashboardCliente />} />
                   <Route path="carta" element={<CartaCliente />} />
                   <Route path="pedido" element={<MiPedido />} />
-                  <Route path="factura" element={<Factura />} />
+                  <Route path="factura" element={<FacturaCliente />} />
                   <Route path="*" element={<Navigate to="/cliente/dashboard" replace />} />
                 </Routes>
               </LayoutCliente>
