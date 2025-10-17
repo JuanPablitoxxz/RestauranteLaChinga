@@ -20,19 +20,28 @@ CREATE TABLE IF NOT EXISTS mesas (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Crear trigger para updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+-- 3. Crear trigger para updated_at (solo si no existe)
+DO $$
 BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_mesas_updated_at 
-    BEFORE UPDATE ON mesas 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
+    -- Crear función si no existe
+    IF NOT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'update_updated_at_column') THEN
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+    END IF;
+    
+    -- Crear trigger si no existe
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_mesas_updated_at') THEN
+        CREATE TRIGGER update_mesas_updated_at 
+            BEFORE UPDATE ON mesas 
+            FOR EACH ROW 
+            EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- 4. Insertar mesas de ejemplo (24 mesas)
 INSERT INTO mesas (numero, capacidad, ubicacion, estado) VALUES
