@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS asignaciones_meseros (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
     -- Evitar asignaciones duplicadas
-    UNIQUE(mesero_id, mesa_id, fecha_asignacion::date)
+    CONSTRAINT unique_asignacion_diaria UNIQUE(mesero_id, mesa_id, DATE(fecha_asignacion))
 );
 
 -- 2. Crear trigger para updated_at
@@ -115,7 +115,7 @@ BEGIN
     (mesero2_id, 10, '7-15'),
     (mesero2_id, 11, '7-15'),
     (mesero2_id, 12, '7-15')
-    ON CONFLICT (mesero_id, mesa_id, fecha_asignacion::date) DO NOTHING;
+    ON CONFLICT (mesero_id, mesa_id, DATE(fecha_asignacion)) DO NOTHING;
     
     -- Turno 15-23: Meseros 3 y 4
     INSERT INTO asignaciones_meseros (mesero_id, mesa_id, turno) VALUES
@@ -131,7 +131,7 @@ BEGIN
     (mesero4_id, 22, '15-23'),
     (mesero4_id, 23, '15-23'),
     (mesero4_id, 24, '15-23')
-    ON CONFLICT (mesero_id, mesa_id, fecha_asignacion::date) DO NOTHING;
+    ON CONFLICT (mesero_id, mesa_id, DATE(fecha_asignacion)) DO NOTHING;
     
     RAISE NOTICE 'Asignaciones de meseros creadas exitosamente';
 END $$;
