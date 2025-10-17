@@ -1,11 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useNotificacionesMesero } from './useNotificacionesMesero'
 import toast from 'react-hot-toast'
 
 export const useCocinaPedidos = () => {
   const queryClient = useQueryClient()
-  const { notificarPedidoListo } = useNotificacionesMesero()
   
   // Estado local para los pedidos (para actualizaciones en tiempo real)
   const [pedidosLocales, setPedidosLocales] = useState(null)
@@ -133,18 +131,12 @@ export const useCocinaPedidos = () => {
         )
       })
       
-      // Si el pedido está listo, notificar al mesero
+      // Si el pedido está listo, mostrar notificación local
       if (nuevoEstado === 'listo') {
         const pedido = (pedidosLocales || pedidosMock).find(p => p.id === pedidoId)
         if (pedido) {
-          await notificarPedidoListo({
-            meseroId: 1, // ID del mesero (temporal)
-            mesaId: pedido.mesa,
-            pedidoId: pedido.id,
-            titulo: `Pedido listo - Mesa ${pedido.mesa}`,
-            mensaje: `El pedido ${pedido.numero} está listo para entregar`,
-            datos: { mesaId: pedido.mesa, pedidoId: pedido.id }
-          })
+          console.log('🔔 Pedido listo:', pedido.numero, 'Mesa:', pedido.mesa)
+          toast.success(`Pedido ${pedido.numero} listo para Mesa ${pedido.mesa}`)
         }
       }
       
