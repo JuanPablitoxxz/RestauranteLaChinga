@@ -37,6 +37,9 @@ const CobrosCajero = () => {
     queryFn: () => {
       console.log('🔍 Obteniendo facturas para cajero...')
       
+      // Verificar todas las claves de localStorage
+      console.log('🔍 Todas las claves localStorage:', Object.keys(localStorage))
+      
       // Obtener facturas enviadas por clientes
       const facturasEnviadasPorClientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
       console.log('📤 Facturas enviadas por clientes:', facturasEnviadasPorClientes)
@@ -46,11 +49,50 @@ const CobrosCajero = () => {
       const rawData = localStorage.getItem('facturasPendientesCajero')
       console.log('🔍 Raw localStorage data:', rawData)
       
-      // Combinar facturas mock con facturas enviadas por clientes
-      const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes]
+      // También verificar otras claves posibles
+      const facturasAlternativas = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+      console.log('📊 Facturas alternativas:', facturasAlternativas)
+      
+      // Crear factura de prueba si no hay ninguna
+      let facturasDePrueba = []
+      if (facturasEnviadasPorClientes.length === 0 && facturasAlternativas.length === 0) {
+        console.log('🧪 Creando factura de prueba...')
+        facturasDePrueba = [{
+          id: Date.now(),
+          numero: 'FAC-TEST-001',
+          cliente: 'Cliente de Prueba',
+          mesa: 5,
+          mesero: 'Mesero de Prueba',
+          total: 250.00,
+          fecha: new Date().toLocaleDateString('es-ES'),
+          hora: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+          items: [
+            { id: 1, nombre: 'Taco de Prueba', cantidad: 2, precio: 25.00, subtotal: 50.00 }
+          ],
+          subtotal: 200.00,
+          iva: 32.00,
+          propina: 18.00,
+          metodo_pago: 'efectivo',
+          estado: 'pendiente_cobro',
+          enviada_por_cliente: true,
+          fecha_envio: new Date().toISOString(),
+          fechaCreacion: new Date().toISOString(),
+          mesaId: 5,
+          pedidoId: Date.now()
+        }]
+        
+        // Guardar factura de prueba
+        localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasDePrueba))
+        console.log('✅ Factura de prueba creada y guardada')
+      }
+      
+      // Combinar todas las facturas
+      const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes, ...facturasAlternativas, ...facturasDePrueba]
       console.log('📋 Total facturas combinadas:', facturasCombinadas.length)
       console.log('📋 Facturas mock:', facturasMock.length)
       console.log('📋 Facturas enviadas:', facturasEnviadasPorClientes.length)
+      console.log('📋 Facturas alternativas:', facturasAlternativas.length)
+      console.log('📋 Facturas de prueba:', facturasDePrueba.length)
       
       // Ordenar por fecha de creación (más recientes primero)
       const facturasOrdenadas = facturasCombinadas.sort((a, b) => {
@@ -63,8 +105,8 @@ const CobrosCajero = () => {
       console.log('✅ Facturas con estado pendiente_cobro:', facturasOrdenadas.filter(f => f.estado === 'pendiente_cobro'))
       return facturasOrdenadas
     },
-    staleTime: 30 * 1000, // Reducir tiempo de caché para actualizaciones más frecuentes
-    refetchInterval: 10 * 1000 // Refrescar cada 10 segundos
+    staleTime: 5 * 1000, // Reducir aún más el tiempo de caché
+    refetchInterval: 5 * 1000 // Refrescar cada 5 segundos
   })
 
   // Obtener pedidos
