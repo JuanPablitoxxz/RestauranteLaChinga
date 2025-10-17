@@ -22,6 +22,8 @@ import MesaCliente from './pages/cliente/Mesa'
 import PedidoCliente from './pages/cliente/Pedido'
 import ReservaCliente from './pages/cliente/Reserva'
 import FacturaCliente from './pages/cliente/Factura'
+import DashboardCliente from './pages/cliente/Dashboard'
+import MiPedido from './pages/cliente/MiPedido'
 
 // Páginas de mesero
 import MesasMesero from './pages/mesero/Mesas'
@@ -32,11 +34,6 @@ import NotificacionesMesero from './pages/mesero/Notificaciones'
 import CobrosCajero from './pages/cajero/Cobros'
 import ReportesCajero from './pages/cajero/Reportes'
 import ReservasCajero from './pages/cajero/Reservas'
-
-// Páginas de cliente
-import DashboardCliente from './pages/cliente/Dashboard'
-import MiPedido from './pages/cliente/MiPedido'
-import Factura from './pages/cliente/Factura'
 
 // Páginas de admin
 import DashboardAdmin from './pages/admin/DashboardSimple'
