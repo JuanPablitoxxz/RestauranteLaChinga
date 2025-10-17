@@ -17,7 +17,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 
 // Páginas de cliente
-import CartaCliente from './pages/cliente/Carta'
+import CartaCliente from './pages/cliente/CartaSimple'
 import MesaCliente from './pages/cliente/Mesa'
 import PedidoCliente from './pages/cliente/Pedido'
 import ReservaCliente from './pages/cliente/Reserva'
