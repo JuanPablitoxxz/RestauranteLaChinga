@@ -84,12 +84,18 @@ export const useFacturasCompartidas = () => {
   useEffect(() => {
     const manejarFacturaEnviada = (event) => {
       console.log('📨 Evento facturaEnviada recibido:', event.detail)
-      setFacturas(obtenerFacturas())
+      console.log('📨 Actualizando facturas en hook...')
+      const nuevasFacturas = obtenerFacturas()
+      console.log('📨 Nuevas facturas obtenidas:', nuevasFacturas.length)
+      setFacturas(nuevasFacturas)
     }
 
     const manejarFacturaActualizada = (event) => {
       console.log('📨 Evento facturaActualizada recibido:', event.detail)
-      setFacturas(obtenerFacturas())
+      console.log('📨 Actualizando facturas en hook...')
+      const nuevasFacturas = obtenerFacturas()
+      console.log('📨 Nuevas facturas obtenidas:', nuevasFacturas.length)
+      setFacturas(nuevasFacturas)
     }
 
     // Agregar listeners
@@ -97,7 +103,9 @@ export const useFacturasCompartidas = () => {
     window.addEventListener('facturaActualizada', manejarFacturaActualizada)
 
     // Cargar facturas iniciales
-    setFacturas(obtenerFacturas())
+    const facturasIniciales = obtenerFacturas()
+    console.log('🔍 Hook inicializado con facturas:', facturasIniciales.length)
+    setFacturas(facturasIniciales)
 
     // Cleanup
     return () => {

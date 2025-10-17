@@ -35,10 +35,11 @@ const CobrosCajero = () => {
 
   // Obtener facturas usando el hook compartido
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
-    queryKey: ['facturas'],
+    queryKey: ['facturas', facturasCompartidas.length], // Incluir dependencia del hook
     queryFn: () => {
       console.log('🔍 Obteniendo facturas para cajero...')
       console.log('🔍 Facturas compartidas del hook:', facturasCompartidas)
+      console.log('🔍 Número de facturas compartidas:', facturasCompartidas.length)
       
       // Combinar facturas mock con las compartidas
       const facturasCombinadas = [...facturasMock, ...facturasCompartidas]
@@ -57,8 +58,8 @@ const CobrosCajero = () => {
       console.log('✅ Facturas con estado pendiente_cobro:', facturasOrdenadas.filter(f => f.estado === 'pendiente_cobro'))
       return facturasOrdenadas
     },
-    staleTime: 2 * 1000, // 2 segundos
-    refetchInterval: 2 * 1000 // Refrescar cada 2 segundos
+    staleTime: 1 * 1000, // 1 segundo
+    refetchInterval: 1 * 1000 // Refrescar cada 1 segundo
   })
 
   // Obtener pedidos
@@ -634,6 +635,24 @@ const CobrosCajero = () => {
             >
               <span>🔄</span>
               <span>Refrescar</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('🔍 DEBUG - Estado actual del cajero:')
+                console.log('🔍 Facturas compartidas:', facturasCompartidas)
+                console.log('🔍 Número de facturas compartidas:', facturasCompartidas.length)
+                console.log('🔍 Facturas del query:', facturas)
+                console.log('🔍 Número de facturas del query:', facturas?.length)
+                console.log('🔍 localStorage facturasPendientesCajero:', localStorage.getItem('facturasPendientesCajero'))
+                console.log('🔍 localStorage facturasParaReportes:', localStorage.getItem('facturasParaReportes'))
+              }}
+              className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
+            >
+              <span>🔍</span>
+              <span>Debug</span>
             </motion.button>
             
           </div>
