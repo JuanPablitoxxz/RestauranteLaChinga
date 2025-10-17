@@ -110,15 +110,15 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
       // Crear usuario temporal en la tabla usuarios
       const usuarioTemporalData = {
         email: `${usuarioTemporal}@temporal.lachinga.com`,
-        password: passwordTemporal,
+        password_hash: `temp_hash_${passwordTemporal}_${timestamp}`,
         nombre: data.cliente_nombre,
+        apellido: 'Temporal',
         rol: 'cliente',
         telefono: data.cliente_telefono,
         activo: true,
         es_temporal: true,
         fecha_expiracion: fechaExpiracion.toISOString(),
-        reserva_id: reservaInsertada.id,
-        fecha_creacion: new Date().toISOString()
+        reserva_id: reservaInsertada.id
       }
 
       const { error: errorUsuario } = await supabase
@@ -310,6 +310,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
               </label>
               <input
                 type="text"
+                autoComplete="name"
                 {...register('cliente_nombre', {
                   required: 'El nombre es requerido',
                   minLength: {
@@ -332,6 +333,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
                 </label>
                 <input
                   type="tel"
+                  autoComplete="tel"
                   {...register('cliente_telefono', {
                     required: 'El teléfono es requerido',
                     pattern: {
@@ -353,6 +355,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
                 </label>
                 <input
                   type="email"
+                  autoComplete="email"
                   {...register('cliente_email', {
                     pattern: {
                       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
