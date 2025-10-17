@@ -76,7 +76,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
 
       // Generar credenciales temporales únicas
       const timestamp = Date.now()
-      const usuarioTemporal = `cliente_${timestamp}`
+      const usuarioTemporal = `cliente_${timestamp}@temporal.lachinga.com`
       const passwordTemporal = Math.random().toString(36).slice(-8)
       
       // Calcular fecha de expiración (24 horas después de la fecha de reserva)
@@ -115,7 +115,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
 
       // Crear usuario temporal en la tabla usuarios
       const usuarioTemporalData = {
-        email: `${usuarioTemporal}@temporal.lachinga.com`,
+        email: usuarioTemporal,
         password_hash: `temp_hash_${passwordTemporal}_${timestamp}`,
         nombre: data.cliente_nombre,
         apellido: 'Temporal',
