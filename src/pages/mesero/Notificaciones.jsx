@@ -24,13 +24,39 @@ const NotificacionesMesero = () => {
   const queryClient = useQueryClient()
   const [filtro, setFiltro] = useState('todas') // todas, no_leidas, leidas
 
-  // Usar el hook personalizado para obtener notificaciones del mesero
-  const {
-    notificaciones: notificacionesServidor,
-    isLoadingNotificaciones,
-    marcarNotificacionLeida,
-    isMarkingNotification
-  } = useMeseroAsignaciones()
+  // TEMPORAL: Usar datos mock directamente
+  const notificacionesServidor = [
+    {
+      id: 1,
+      tipo: 'pedido_nuevo',
+      titulo: 'Nuevo pedido - Mesa 2',
+      mensaje: 'El cliente ha realizado un pedido con 3 items',
+      leida: false,
+      prioridad: 'alta',
+      created_at: new Date(Date.now() - 300000).toISOString(), // 5 min atrás
+      datos: { mesaId: 2, pedidoId: 1 }
+    },
+    {
+      id: 2,
+      tipo: 'cliente_termina',
+      titulo: 'Cliente solicita cuenta - Mesa 4',
+      mensaje: 'El cliente solicita la cuenta',
+      leida: false,
+      prioridad: 'alta',
+      created_at: new Date(Date.now() - 600000).toISOString(), // 10 min atrás
+      datos: { mesaId: 4 }
+    },
+    {
+      id: 3,
+      tipo: 'pedido_listo',
+      titulo: 'Pedido listo - Mesa 1',
+      mensaje: 'El pedido está listo para entregar',
+      leida: true,
+      prioridad: 'normal',
+      created_at: new Date(Date.now() - 1800000).toISOString(), // 30 min atrás
+      datos: { mesaId: 1, pedidoId: 3 }
+    }
+  ]
 
   // Combinar notificaciones locales y del servidor
   const todasLasNotificaciones = [
@@ -85,20 +111,10 @@ const NotificacionesMesero = () => {
     }
   }
 
-  const marcarComoLeidaHandler = async (notificacionId) => {
-    try {
-      // Intentar marcar como leída en el servidor primero
-      if (notificacionesServidor?.some(n => n.id === notificacionId)) {
-        await marcarNotificacionLeida(notificacionId)
-      } else {
-        // Si es una notificación local, usar el store local
-        marcarComoLeida(notificacionId)
-      }
-      toast.success('Notificación marcada como leída')
-    } catch (error) {
-      toast.error('Error al marcar notificación como leída')
-      console.error('Error:', error)
-    }
+  const marcarComoLeidaHandler = (notificacionId) => {
+    // TEMPORAL: Solo usar store local
+    marcarComoLeida(notificacionId)
+    toast.success('Notificación marcada como leída')
   }
 
   const eliminarNotificacion = (notificacionId) => {

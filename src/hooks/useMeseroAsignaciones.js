@@ -1,10 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 
 export const useMeseroAsignaciones = () => {
   const { usuario } = useAuthStore()
   const queryClient = useQueryClient()
+  
+  // Estado local para las mesas (para actualizaciones en tiempo real)
+  const [mesasLocales, setMesasLocales] = useState(null)
 
   // Obtener mesas asignadas al mesero actual
   const { data: mesasAsignadas, isLoading: isLoadingMesas } = useQuery({
@@ -26,7 +30,13 @@ export const useMeseroAsignaciones = () => {
         { id: 5, numero: 5, capacidad: 4, estado: 'libre', ubicacion: 'terraza' },
         { id: 6, numero: 6, capacidad: 2, estado: 'pendiente_pago', ubicacion: 'interior' }
       ]
-      return mesasMock
+      
+      // Inicializar estado local si no existe
+      if (!mesasLocales) {
+        setMesasLocales(mesasMock)
+      }
+      
+      return mesasLocales || mesasMock
 
       // CÓDIGO ORIGINAL COMENTADO TEMPORALMENTE
       /*
@@ -220,19 +230,23 @@ export const useMeseroAsignaciones = () => {
   // Mutación para actualizar estado de mesa
   const actualizarEstadoMesa = useMutation({
     mutationFn: async ({ mesaId, nuevoEstado }) => {
-      const { error } = await supabase
-        .from('mesas')
-        .update({ 
-          estado: nuevoEstado,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', mesaId)
-
-      if (error) {
-        console.error('❌ Error al actualizar estado de mesa:', error)
-        throw error
-      }
-
+      console.log('🔄 Actualizando estado de mesa:', mesaId, 'a', nuevoEstado)
+      
+      // Actualizar estado local inmediatamente
+      setMesasLocales(prevMesas => {
+        if (!prevMesas) return prevMesas
+        
+        return prevMesas.map(mesa => 
+          mesa.id === mesaId 
+            ? { ...mesa, estado: nuevoEstado }
+            : mesa
+        )
+      })
+      
+      // TEMPORAL: Simular actualización exitosa
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      console.log('✅ Estado de mesa actualizado exitosamente')
       return { success: true }
     },
     onSuccess: () => {
