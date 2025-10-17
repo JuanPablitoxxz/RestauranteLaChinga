@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useMenuDinamico } from '../../hooks/useMenuDinamico'
-import { usePlatosPorHora } from '../../hooks/usePlatosSupabase'
+import { usePlatosSimple } from '../../hooks/usePlatosSimple'
 import { useCarrito } from '../../components/CarritoSimple'
 
 const CartaCliente = () => {
@@ -39,8 +39,8 @@ const CartaCliente = () => {
   // Hook para menús dinámicos
   const { menuActual, horaActual, obtenerNombreMenu, obtenerProximoMenu, esHorarioValido } = useMenuDinamico()
 
-  // Obtener platos de Supabase según la hora actual
-  const { data: platosSupabase, isLoading: cargandoPlatos, error: errorPlatos } = usePlatosPorHora()
+  // Obtener platos de Supabase (versión simple)
+  const { data: platosSupabase, isLoading: cargandoPlatos, error: errorPlatos } = usePlatosSimple()
 
   console.log('🍽️ Carta - Platos de Supabase:', platosSupabase)
   console.log('🍽️ Carta - Cargando platos:', cargandoPlatos)
