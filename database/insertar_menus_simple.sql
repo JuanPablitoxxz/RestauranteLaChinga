@@ -2,26 +2,25 @@
 -- INSERTAR DATOS DE MENÚS MEXICANOS - LA CHINGA
 -- =====================================================
 
--- Insertar cartas si no existen
+-- Insertar cartas si no existen (usando gen_random_uuid() para IDs)
 INSERT INTO cartas (id, nombre, descripcion, horario_inicio, horario_fin, activa) VALUES
 -- DESAYUNOS (7:00 - 11:00)
-('carta-desayunos', 'Desayunos Mexicanos', 'Los mejores desayunos tradicionales de México', '07:00', '11:00', true),
+(gen_random_uuid(), 'Desayunos Mexicanos', 'Los mejores desayunos tradicionales de México', '07:00', '11:00', true),
 
 -- ALMUERZOS (11:00 - 15:00)  
-('carta-almuerzos', 'Almuerzos Tradicionales', 'Platos fuertes y especialidades mexicanas', '11:00', '15:00', true),
+(gen_random_uuid(), 'Almuerzos Tradicionales', 'Platos fuertes y especialidades mexicanas', '11:00', '15:00', true),
 
 -- BEBIDAS MATUTINAS (7:00 - 15:00)
-('carta-bebidas-matutinas', 'Bebidas Matutinas', 'Café, jugos y bebidas para empezar el día', '07:00', '15:00', true),
+(gen_random_uuid(), 'Bebidas Matutinas', 'Café, jugos y bebidas para empezar el día', '07:00', '15:00', true),
 
 -- CENAS (15:00 - 23:00)
-('carta-cenas', 'Cenas Especiales', 'Especialidades para la cena', '15:00', '23:00', true),
+(gen_random_uuid(), 'Cenas Especiales', 'Especialidades para la cena', '15:00', '23:00', true),
 
 -- BEBIDAS VESPERTINAS (15:00 - 23:00)
-('carta-bebidas-vespertinas', 'Bebidas Vespertinas', 'Cócteles, cervezas y bebidas para la noche', '15:00', '23:00', true),
+(gen_random_uuid(), 'Bebidas Vespertinas', 'Cócteles, cervezas y bebidas para la noche', '15:00', '23:00', true),
 
 -- POSTRES (Todo el día)
-('carta-postres', 'Postres Mexicanos', 'Dulces tradicionales y postres especiales', '07:00', '23:00', true)
-ON CONFLICT (id) DO NOTHING;
+(gen_random_uuid(), 'Postres Mexicanos', 'Dulces tradicionales y postres especiales', '07:00', '23:00', true);
 
 -- =====================================================
 -- DESAYUNOS MEXICANOS (7:00 - 11:00)
