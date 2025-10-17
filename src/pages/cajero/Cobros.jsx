@@ -33,22 +33,36 @@ const CobrosCajero = () => {
   const [mostrarModalCancelacion, setMostrarModalCancelacion] = useState(false)
   const [motivoCancelacion, setMotivoCancelacion] = useState('')
 
-  // Obtener facturas usando el hook compartido
+  // Obtener facturas directamente del localStorage
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
-    queryKey: ['facturas', facturasCompartidas.length], // Incluir dependencia del hook
+    queryKey: ['facturas'],
     queryFn: () => {
       console.log('🔍 Obteniendo facturas para cajero...')
-      console.log('🔍 Facturas compartidas del hook:', facturasCompartidas)
-      console.log('🔍 Número de facturas compartidas:', facturasCompartidas.length)
       
-      // Combinar facturas mock con las compartidas
-      const facturasCombinadas = [...facturasMock, ...facturasCompartidas]
-      console.log('📋 Total facturas combinadas:', facturasCombinadas.length)
+      // Obtener facturas directamente del localStorage
+      const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+      
+      console.log('🔍 Facturas pendientes directas:', facturasPendientes)
+      console.log('🔍 Facturas reportes directas:', facturasReportes)
+      console.log('🔍 Número de facturas pendientes:', facturasPendientes.length)
+      console.log('🔍 Número de facturas reportes:', facturasReportes.length)
+      
+      // Combinar todas las facturas
+      const todasLasFacturas = [...facturasMock, ...facturasPendientes, ...facturasReportes]
+      
+      // Eliminar duplicados por ID
+      const facturasUnicas = todasLasFacturas.filter((factura, index, self) => 
+        index === self.findIndex(f => f.id === factura.id)
+      )
+      
+      console.log('📋 Total facturas combinadas:', facturasUnicas.length)
       console.log('📋 Facturas mock:', facturasMock.length)
-      console.log('📋 Facturas compartidas:', facturasCompartidas.length)
+      console.log('📋 Facturas pendientes:', facturasPendientes.length)
+      console.log('📋 Facturas reportes:', facturasReportes.length)
       
       // Ordenar por fecha de creación (más recientes primero)
-      const facturasOrdenadas = facturasCombinadas.sort((a, b) => {
+      const facturasOrdenadas = facturasUnicas.sort((a, b) => {
         const fechaA = new Date(a.fechaCreacion || a.fecha_envio || Date.now())
         const fechaB = new Date(b.fechaCreacion || b.fecha_envio || Date.now())
         return fechaB - fechaA
@@ -641,13 +655,22 @@ const CobrosCajero = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                console.log('🔍 DEBUG - Estado actual del cajero:')
-                console.log('🔍 Facturas compartidas:', facturasCompartidas)
-                console.log('🔍 Número de facturas compartidas:', facturasCompartidas.length)
+                console.log('🔍 DEBUG COMPLETO DEL CAJERO:')
+                
+                // Verificar localStorage directamente
+                const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+                const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+                
+                console.log('🔍 localStorage facturasPendientesCajero:', facturasPendientes)
+                console.log('🔍 localStorage facturasParaReportes:', facturasReportes)
+                console.log('🔍 Total facturas en localStorage:', facturasPendientes.length + facturasReportes.length)
+                
+                // Verificar facturas del query
                 console.log('🔍 Facturas del query:', facturas)
                 console.log('🔍 Número de facturas del query:', facturas?.length)
-                console.log('🔍 localStorage facturasPendientesCajero:', localStorage.getItem('facturasPendientesCajero'))
-                console.log('🔍 localStorage facturasParaReportes:', localStorage.getItem('facturasParaReportes'))
+                
+                // Mostrar todas las claves de localStorage
+                console.log('🔍 Todas las claves localStorage:', Object.keys(localStorage))
                 
                 // Debug detallado de cada factura
                 if (facturas) {
@@ -663,6 +686,10 @@ const CobrosCajero = () => {
                     })
                   })
                 }
+                
+                // Mostrar alerta con resumen
+                const totalFacturas = facturasPendientes.length + facturasReportes.length
+                alert(`🔍 DEBUG RESUMEN:\n\nFacturas en localStorage: ${totalFacturas}\nFacturas pendientes: ${facturasPendientes.length}\nFacturas reportes: ${facturasReportes.length}\nFacturas en query: ${facturas?.length || 0}`)
               }}
               className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
             >
