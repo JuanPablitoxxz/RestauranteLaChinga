@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { pedidosMock } from '../../data/mockData'
+import { useNotificacionesMesero } from '../../hooks/useNotificacionesMesero'
 import toast from 'react-hot-toast'
 import { 
   ClockIcon,
@@ -20,6 +21,9 @@ const PedidosCocina = () => {
   const queryClient = useQueryClient()
   const [filtro, setFiltro] = useState('todos') // todos, pendientes, en_preparacion, listos
   const [ordenamiento, setOrdenamiento] = useState('fecha') // fecha, prioridad, tiempo
+
+  // Hook para notificaciones al mesero
+  const { notificarPedidoListo } = useNotificacionesMesero()
 
   // Obtener pedidos
   const { data: pedidos, isLoading: isLoadingPedidos } = useQuery({
@@ -117,6 +121,19 @@ const PedidosCocina = () => {
       nuevoEstado,
       observaciones: ''
     })
+
+    // Si el pedido está listo, notificar al mesero
+    if (nuevoEstado === 'listo') {
+      try {
+        const pedido = pedidos?.find(p => p.id === pedidoId)
+        if (pedido) {
+          await notificarPedidoListo(pedido.mesaId, pedidoId)
+        }
+      } catch (error) {
+        console.error('Error al notificar pedido listo:', error)
+        toast.error('Error al notificar al mesero')
+      }
+    }
   }
 
   const calcularTiempoEspera = (fechaCreacion) => {

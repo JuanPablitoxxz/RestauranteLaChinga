@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '../../stores/authStore'
+import { useMeseroAsignaciones } from '../../hooks/useMeseroAsignaciones'
 import { mesasMock, pedidosMock } from '../../data/mockData'
 import toast from 'react-hot-toast'
 import { 
@@ -11,7 +12,9 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
   BellIcon,
-  PlusIcon
+  PlusIcon,
+  MapPinIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline'
 
 const MesasMesero = () => {
@@ -20,12 +23,15 @@ const MesasMesero = () => {
   const [mesaSeleccionada, setMesaSeleccionada] = useState(null)
   const [mostrarModal, setMostrarModal] = useState(false)
 
-  // Obtener mesas asignadas al mesero
-  const { data: mesas, isLoading: isLoadingMesas } = useQuery({
-    queryKey: ['mesas'],
-    queryFn: () => mesasMock,
-    staleTime: 5 * 60 * 1000
-  })
+  // Usar el hook personalizado para obtener mesas asignadas
+  const {
+    mesasAsignadas,
+    notificaciones,
+    estadisticas,
+    isLoadingMesas,
+    actualizarEstadoMesa,
+    isUpdatingMesa
+  } = useMeseroAsignaciones()
 
   // Obtener pedidos
   const { data: pedidos } = useQuery({
@@ -34,25 +40,16 @@ const MesasMesero = () => {
     staleTime: 5 * 60 * 1000
   })
 
-  const mesasAsignadas = mesas?.filter(mesa => 
-    usuario?.mesasAsignadas?.includes(mesa.id)
-  ) || []
-
-  // Mutación para actualizar estado de mesa
-  const actualizarMesaMutation = useMutation({
-    mutationFn: async ({ mesaId, nuevoEstado }) => {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return { success: true }
-    },
-    onSuccess: () => {
+  // Función para cambiar estado de mesa usando el hook
+  const cambiarEstadoMesa = async (mesaId, nuevoEstado) => {
+    try {
+      await actualizarEstadoMesa({ mesaId, nuevoEstado })
       toast.success('Estado de mesa actualizado')
-      queryClient.invalidateQueries(['mesas'])
-    },
-    onError: () => {
+    } catch (error) {
       toast.error('Error al actualizar la mesa')
+      console.error('Error:', error)
     }
-  })
+  }
 
   const obtenerEstadoMesa = (mesa) => {
     switch (mesa.estado) {
@@ -101,9 +98,6 @@ const MesasMesero = () => {
     )
   }
 
-  const cambiarEstadoMesa = async (mesaId, nuevoEstado) => {
-    await actualizarMesaMutation.mutateAsync({ mesaId, nuevoEstado })
-  }
 
   const obtenerAccionesDisponibles = (mesa) => {
     const acciones = []
@@ -206,38 +200,48 @@ const MesasMesero = () => {
         {[
           { 
             label: 'Total Mesas', 
-            valor: mesasAsignadas.length, 
-            color: 'bg-blue-100 text-blue-800' 
+            valor: estadisticas.totalMesas, 
+            color: 'bg-blue-100 text-blue-800',
+            icono: UsersIcon
           },
           { 
             label: 'Ocupadas', 
-            valor: mesasAsignadas.filter(m => m.estado === 'ocupada').length, 
-            color: 'bg-primary-100 text-primary-800' 
+            valor: estadisticas.mesasOcupadas, 
+            color: 'bg-primary-100 text-primary-800',
+            icono: UserGroupIcon
           },
           { 
             label: 'Con Pedido', 
-            valor: mesasAsignadas.filter(m => m.estado === 'con_pedido').length, 
-            color: 'bg-yellow-100 text-yellow-800' 
+            valor: estadisticas.mesasConPedido, 
+            color: 'bg-yellow-100 text-yellow-800',
+            icono: ClockIcon
           },
           { 
             label: 'Pendiente Pago', 
-            valor: mesasAsignadas.filter(m => m.estado === 'pendiente_pago').length, 
-            color: 'bg-orange-100 text-orange-800' 
+            valor: estadisticas.mesasPendientePago, 
+            color: 'bg-orange-100 text-orange-800',
+            icono: ExclamationTriangleIcon
           }
-        ].map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 * index }}
-            className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center"
-          >
-            <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${stat.color} mb-2`}>
-              {stat.valor}
-            </div>
-            <p className="text-sm text-neutral-600">{stat.label}</p>
-          </motion.div>
-        ))}
+        ].map((stat, index) => {
+          const Icono = stat.icono
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 * index }}
+              className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center"
+            >
+              <div className="flex items-center justify-center mb-2">
+                <Icono className="h-5 w-5 text-neutral-600 mr-2" />
+                <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${stat.color}`}>
+                  {stat.valor}
+                </div>
+              </div>
+              <p className="text-sm text-neutral-600">{stat.label}</p>
+            </motion.div>
+          )
+        })}
       </motion.div>
 
       {/* Grid de mesas */}
@@ -296,6 +300,7 @@ const MesasMesero = () => {
                 </div>
                 
                 <div className="flex items-center space-x-2">
+                  <MapPinIcon className="h-4 w-4 text-neutral-600" />
                   <span className="text-sm text-neutral-600">Ubicación:</span>
                   <span className={`text-xs px-2 py-1 rounded-full ${obtenerColorUbicacion(mesa.ubicacion)}`}>
                     {mesa.ubicacion}
@@ -337,7 +342,7 @@ const MesasMesero = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => cambiarEstadoMesa(mesa.id, accion.nuevoEstado)}
-                    disabled={actualizarMesaMutation.isPending}
+                    disabled={isUpdatingMesa}
                     className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                       accion.color === 'btn-primary' ? 'btn-primary' :
                       accion.color === 'btn-secondary' ? 'btn-secondary' :

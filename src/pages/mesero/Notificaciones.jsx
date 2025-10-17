@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from '../../stores/appStore'
+import { useMeseroAsignaciones } from '../../hooks/useMeseroAsignaciones'
 import toast from 'react-hot-toast'
 import { 
   BellIcon,
@@ -11,69 +12,31 @@ import {
   ClockIcon,
   XMarkIcon,
   EyeIcon,
-  EyeSlashIcon
+  EyeSlashIcon,
+  TrashIcon,
+  CheckIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 const NotificacionesMesero = () => {
-  const { notificaciones, marcarComoLeida, removerNotificacion, limpiarNotificaciones } = useAppStore()
+  const { notificaciones: notificacionesLocales, marcarComoLeida, removerNotificacion, limpiarNotificaciones } = useAppStore()
   const queryClient = useQueryClient()
   const [filtro, setFiltro] = useState('todas') // todas, no_leidas, leidas
 
-  // Simular notificaciones del servidor
-  const { data: notificacionesServidor } = useQuery({
-    queryKey: ['notificaciones-mesero'],
-    queryFn: async () => {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return [
-        {
-          id: 1,
-          tipo: 'pedido_nuevo',
-          titulo: 'Nuevo pedido en Mesa 5',
-          mensaje: 'El cliente ha realizado un pedido con 3 items',
-          leida: false,
-          timestamp: new Date(Date.now() - 300000), // 5 min atrás
-          datos: { mesaId: 5, pedidoId: 1 }
-        },
-        {
-          id: 2,
-          tipo: 'cliente_termina',
-          titulo: 'Cliente solicita cuenta - Mesa 3',
-          mensaje: 'El cliente de la mesa 3 solicita la cuenta',
-          leida: false,
-          timestamp: new Date(Date.now() - 600000), // 10 min atrás
-          datos: { mesaId: 3 }
-        },
-        {
-          id: 3,
-          tipo: 'reserva_nueva',
-          titulo: 'Nueva reserva confirmada',
-          mensaje: 'Reserva para 4 personas a las 20:00 en Mesa 8',
-          leida: true,
-          timestamp: new Date(Date.now() - 1800000), // 30 min atrás
-          datos: { mesaId: 8, reservaId: 2 }
-        },
-        {
-          id: 4,
-          tipo: 'pedido_listo',
-          titulo: 'Pedido listo - Mesa 2',
-          mensaje: 'El pedido de la mesa 2 está listo para entregar',
-          leida: true,
-          timestamp: new Date(Date.now() - 3600000), // 1 hora atrás
-          datos: { mesaId: 2, pedidoId: 3 }
-        }
-      ]
-    },
-    staleTime: 5 * 60 * 1000
-  })
+  // Usar el hook personalizado para obtener notificaciones del mesero
+  const {
+    notificaciones: notificacionesServidor,
+    isLoadingNotificaciones,
+    marcarNotificacionLeida,
+    isMarkingNotification
+  } = useMeseroAsignaciones()
 
   // Combinar notificaciones locales y del servidor
   const todasLasNotificaciones = [
-    ...notificaciones,
+    ...notificacionesLocales,
     ...(notificacionesServidor || [])
-  ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  ].sort((a, b) => new Date(b.created_at || b.timestamp) - new Date(a.created_at || a.timestamp))
 
   const notificacionesFiltradas = todasLasNotificaciones.filter(notif => {
     switch (filtro) {
@@ -122,9 +85,20 @@ const NotificacionesMesero = () => {
     }
   }
 
-  const marcarComoLeidaHandler = (notificacionId) => {
-    marcarComoLeida(notificacionId)
-    toast.success('Notificación marcada como leída')
+  const marcarComoLeidaHandler = async (notificacionId) => {
+    try {
+      // Intentar marcar como leída en el servidor primero
+      if (notificacionesServidor?.some(n => n.id === notificacionId)) {
+        await marcarNotificacionLeida(notificacionId)
+      } else {
+        // Si es una notificación local, usar el store local
+        marcarComoLeida(notificacionId)
+      }
+      toast.success('Notificación marcada como leída')
+    } catch (error) {
+      toast.error('Error al marcar notificación como leída')
+      console.error('Error:', error)
+    }
   }
 
   const eliminarNotificacion = (notificacionId) => {

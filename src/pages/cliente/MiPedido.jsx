@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useCarrito } from '../../components/CarritoSimple'
+import { useNotificacionesMesero } from '../../hooks/useNotificacionesMesero'
 
 const MiPedido = () => {
   console.log('🎯🎯🎯 MiPedido - COMPONENTE INICIADO 🎯🎯🎯')
@@ -30,6 +31,9 @@ const MiPedido = () => {
     observaciones,
     getTotalPrecio 
   } = useCarrito()
+
+  // Hook para notificaciones al mesero
+  const { notificarPedidoNuevo, notificarClienteTermina } = useNotificacionesMesero()
 
   console.log('🎯 MiPedido - Después de useCarrito')
   console.log('🎯 MiPedido - carrito recibido:', carrito)
@@ -138,8 +142,30 @@ const MiPedido = () => {
   const itemsEnPreparacion = pedido.filter(item => item.estado === 'en_preparacion').length
   const itemsListos = pedido.filter(item => item.estado === 'listo').length
 
-  const notificarMesero = () => {
-    toast.success('Notificación enviada al mesero')
+  const notificarMesero = async () => {
+    try {
+      // Obtener el número de mesa del usuario (simulado por ahora)
+      const mesaId = 5 // En un sistema real, esto vendría del contexto del usuario
+      
+      await notificarPedidoNuevo(mesaId, Date.now(), carrito.length)
+      toast.success('Notificación enviada al mesero')
+    } catch (error) {
+      console.error('Error al notificar al mesero:', error)
+      toast.error('Error al enviar notificación al mesero')
+    }
+  }
+
+  const solicitarCuenta = async () => {
+    try {
+      // Obtener el número de mesa del usuario (simulado por ahora)
+      const mesaId = 5 // En un sistema real, esto vendría del contexto del usuario
+      
+      await notificarClienteTermina(mesaId)
+      toast.success('Solicitud de cuenta enviada al mesero')
+    } catch (error) {
+      console.error('Error al solicitar cuenta:', error)
+      toast.error('Error al solicitar cuenta')
+    }
   }
 
   return (
@@ -366,6 +392,16 @@ const MiPedido = () => {
             >
               <BellIcon className="h-4 w-4" />
               <span>Notificar al Mesero</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={solicitarCuenta}
+              className="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center space-x-2"
+            >
+              <CheckCircleIcon className="h-4 w-4" />
+              <span>Solicitar Cuenta</span>
             </motion.button>
             
             <motion.button
