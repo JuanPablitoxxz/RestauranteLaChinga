@@ -39,7 +39,6 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
       const usuarioData = {
         email: data.email,
         password_hash: `hash_${data.password}_${Date.now()}`,
-        password: data.password,
         nombre: data.nombre,
         apellido: data.apellido,
         rol: data.rol,
@@ -116,6 +115,7 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
                 </label>
                 <input
                   type="text"
+                  autoComplete="given-name"
                   {...register('nombre', {
                     required: 'El nombre es requerido',
                     minLength: {
@@ -141,6 +141,7 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
                 </label>
                 <input
                   type="text"
+                  autoComplete="family-name"
                   {...register('apellido', {
                     required: 'El apellido es requerido',
                     minLength: {
@@ -167,6 +168,7 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
               </label>
               <input
                 type="email"
+                autoComplete="username"
                 {...register('email', {
                   required: 'El email es requerido',
                   pattern: {
@@ -188,6 +190,7 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
               </label>
               <input
                 type="tel"
+                autoComplete="tel"
                 {...register('telefono', {
                   pattern: {
                     value: /^[\+]?[0-9\s\-\(\)]{10,}$/,
