@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { facturasMock, pedidosMock } from '../../data/mockData'
@@ -32,6 +32,23 @@ const CobrosCajero = () => {
   const { facturas: facturasCompartidas, actualizarFactura } = useFacturasCompartidas()
   const [mostrarModalCancelacion, setMostrarModalCancelacion] = useState(false)
   const [motivoCancelacion, setMotivoCancelacion] = useState('')
+
+  // Listener para eventos de storage (sincronización entre pestañas)
+  useEffect(() => {
+    const manejarStorageChange = (event) => {
+      if (event.key === 'facturasPendientesCajero' || event.key === 'facturasParaReportes') {
+        console.log('🔄 Evento de storage detectado:', event.key, event.newValue)
+        // Refrescar query cuando cambie el localStorage
+        queryClient.invalidateQueries(['facturas'])
+      }
+    }
+
+    window.addEventListener('storage', manejarStorageChange)
+    
+    return () => {
+      window.removeEventListener('storage', manejarStorageChange)
+    }
+  }, [queryClient])
 
   // Obtener facturas directamente del localStorage
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
@@ -765,6 +782,38 @@ const CobrosCajero = () => {
             >
               <span>🔄</span>
               <span>Forzar Sync</span>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                console.log('🔄 Sincronizando con evento de almacenamiento...')
+                // Disparar evento de storage para sincronizar entre pestañas
+                window.dispatchEvent(new StorageEvent('storage', {
+                  key: 'facturasPendientesCajero',
+                  newValue: localStorage.getItem('facturasPendientesCajero'),
+                  oldValue: null,
+                  storageArea: localStorage,
+                  url: window.location.href
+                }))
+                
+                window.dispatchEvent(new StorageEvent('storage', {
+                  key: 'facturasParaReportes',
+                  newValue: localStorage.getItem('facturasParaReportes'),
+                  oldValue: null,
+                  storageArea: localStorage,
+                  url: window.location.href
+                }))
+                
+                // Refrescar query
+                queryClient.invalidateQueries(['facturas'])
+                toast.success('✅ Sincronización entre pestañas')
+              }}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+            >
+              <span>🔄</span>
+              <span>Sync Pestañas</span>
             </motion.button>
             
           </div>
