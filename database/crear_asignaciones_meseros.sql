@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS asignaciones_meseros (
     mesero_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     mesa_id INTEGER NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
     fecha_asignacion TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    fecha_asignacion_date DATE GENERATED ALWAYS AS (fecha_asignacion::date) STORED,
+    fecha_asignacion_date DATE DEFAULT CURRENT_DATE,
     activa BOOLEAN DEFAULT true,
     turno VARCHAR(10) NOT NULL CHECK (turno IN ('7-15', '15-23')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
