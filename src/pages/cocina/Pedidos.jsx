@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { pedidosMock } from '../../data/mockData'
-import { useNotificacionesMesero } from '../../hooks/useNotificacionesMesero'
+import { useCocinaPedidos } from '../../hooks/useCocinaPedidos'
 import toast from 'react-hot-toast'
 import { 
   ClockIcon,
@@ -12,25 +10,24 @@ import {
   BellIcon,
   PlayIcon,
   PauseIcon,
-  StopIcon
+  StopIcon,
+  MapPinIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 const PedidosCocina = () => {
-  const queryClient = useQueryClient()
   const [filtro, setFiltro] = useState('todos') // todos, pendientes, en_preparacion, listos
   const [ordenamiento, setOrdenamiento] = useState('fecha') // fecha, prioridad, tiempo
 
-  // Hook para notificaciones al mesero
-  const { notificarPedidoListo } = useNotificacionesMesero()
-
-  // Obtener pedidos
-  const { data: pedidos, isLoading: isLoadingPedidos } = useQuery({
-    queryKey: ['pedidos'],
-    queryFn: () => pedidosMock,
-    staleTime: 5 * 60 * 1000
-  })
+  // Hook personalizado para gestión de pedidos de cocina
+  const {
+    pedidos,
+    isLoadingPedidos,
+    cambiarEstadoPedido,
+    isChangingState
+  } = useCocinaPedidos()
 
   // Filtrar y ordenar pedidos
   const pedidosFiltrados = pedidos?.filter(pedido => {
@@ -52,21 +49,9 @@ const PedidosCocina = () => {
     }
   }) || []
 
-  // Mutación para actualizar estado del pedido
-  const actualizarPedidoMutation = useMutation({
-    mutationFn: async ({ pedidoId, nuevoEstado, observaciones }) => {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return { success: true }
-    },
-    onSuccess: () => {
-      toast.success('Estado del pedido actualizado')
-      queryClient.invalidateQueries(['pedidos'])
-    },
-    onError: () => {
-      toast.error('Error al actualizar el pedido')
-    }
-  })
+  const cambiarEstado = (pedidoId, nuevoEstado) => {
+    cambiarEstadoPedido.mutate({ pedidoId, nuevoEstado })
+  }
 
   const obtenerEstadoPedido = (estado) => {
     switch (estado) {
@@ -116,7 +101,7 @@ const PedidosCocina = () => {
   }
 
   const actualizarEstado = async (pedidoId, nuevoEstado) => {
-    await actualizarPedidoMutation.mutateAsync({
+    await cambiarEstadoPedido.mutateAsync({
       pedidoId,
       nuevoEstado,
       observaciones: ''
@@ -428,7 +413,7 @@ const PedidosCocina = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => actualizarEstado(pedido.id, 'en_preparacion')}
-                      disabled={actualizarPedidoMutation.isPending}
+                      disabled={isChangingState}
                       className="btn-primary flex items-center space-x-2"
                     >
                       <PlayIcon className="h-4 w-4" />
@@ -441,7 +426,7 @@ const PedidosCocina = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => actualizarEstado(pedido.id, 'listo')}
-                      disabled={actualizarPedidoMutation.isPending}
+                      disabled={isChangingState}
                       className="btn-success flex items-center space-x-2"
                     >
                       <CheckCircleIcon className="h-4 w-4" />
@@ -454,7 +439,7 @@ const PedidosCocina = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => actualizarEstado(pedido.id, 'entregado')}
-                      disabled={actualizarPedidoMutation.isPending}
+                      disabled={isChangingState}
                       className="btn-primary flex items-center space-x-2"
                     >
                       <CheckCircleIcon className="h-4 w-4" />

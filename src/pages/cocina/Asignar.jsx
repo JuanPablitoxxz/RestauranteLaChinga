@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { pedidosMock } from '../../data/mockData'
+import { useCocinaPedidos } from '../../hooks/useCocinaPedidos'
 import toast from 'react-hot-toast'
 import { 
   UserGroupIcon,
@@ -10,65 +9,44 @@ import {
   ExclamationTriangleIcon,
   PlusIcon,
   MinusIcon,
-  TrashIcon
+  TrashIcon,
+  MapPinIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
 const AsignarCocina = () => {
-  const queryClient = useQueryClient()
   const [cocineroSeleccionado, setCocineroSeleccionado] = useState(null)
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null)
   const [mostrarModal, setMostrarModal] = useState(false)
 
-  // Obtener pedidos
-  const { data: pedidos, isLoading: isLoadingPedidos } = useQuery({
-    queryKey: ['pedidos'],
-    queryFn: () => pedidosMock,
-    staleTime: 5 * 60 * 1000
-  })
-
-  // Mock de cocineros
-  const cocineros = [
-    { id: 1, nombre: 'Chef Roberto', especialidad: 'Platos Principales', activo: true, pedidosAsignados: 2 },
-    { id: 2, nombre: 'Chef María', especialidad: 'Entradas y Ensaladas', activo: true, pedidosAsignados: 1 },
-    { id: 3, nombre: 'Chef Carlos', especialidad: 'Postres', activo: true, pedidosAsignados: 0 },
-    { id: 4, nombre: 'Chef Ana', especialidad: 'Bebidas y Cocteles', activo: false, pedidosAsignados: 0 }
-  ]
+  // Hook personalizado para gestión de pedidos de cocina
+  const {
+    pedidos,
+    cocineros,
+    isLoadingPedidos,
+    isLoadingCocineros,
+    asignarPedido,
+    desasignarPedido,
+    isAssigning,
+    isUnassigning
+  } = useCocinaPedidos()
 
   const pedidosPendientes = pedidos?.filter(p => p.estado === 'pendiente') || []
   const pedidosEnPreparacion = pedidos?.filter(p => p.estado === 'en_preparacion') || []
 
-  // Mutación para asignar pedido
-  const asignarPedidoMutation = useMutation({
-    mutationFn: async ({ pedidoId, cocineroId }) => {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return { success: true }
-    },
-    onSuccess: () => {
-      toast.success('Pedido asignado exitosamente')
-      setMostrarModal(false)
-      setPedidoSeleccionado(null)
-      setCocineroSeleccionado(null)
-      queryClient.invalidateQueries(['pedidos'])
-    },
-    onError: () => {
-      toast.error('Error al asignar el pedido')
-    }
-  })
-
-  const asignarPedido = async () => {
-    if (!pedidoSeleccionado || !cocineroSeleccionado) {
-      toast.error('Selecciona un pedido y un cocinero')
-      return
-    }
-
-    await asignarPedidoMutation.mutateAsync({
-      pedidoId: pedidoSeleccionado.id,
-      cocineroId: cocineroSeleccionado.id
-    })
+  const asignarPedidoHandler = (pedidoId, cocineroId) => {
+    asignarPedido.mutate({ pedidoId, cocineroId })
+    setMostrarModal(false)
+    setPedidoSeleccionado(null)
+    setCocineroSeleccionado(null)
   }
+
+  const desasignarPedidoHandler = (pedidoId) => {
+    desasignarPedido.mutate({ pedidoId })
+  }
+
 
   const calcularTiempoEspera = (fechaCreacion) => {
     const ahora = new Date()
@@ -435,15 +413,15 @@ const AsignarCocina = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={asignarPedido}
-                disabled={!cocineroSeleccionado || asignarPedidoMutation.isPending}
+                onClick={() => asignarPedidoHandler(pedidoSeleccionado.id, cocineroSeleccionado.id)}
+                disabled={!cocineroSeleccionado || isAssigning}
                 className={`flex-1 ${
-                  !cocineroSeleccionado || asignarPedidoMutation.isPending
+                  !cocineroSeleccionado || isAssigning
                     ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
                     : 'btn-primary'
                 }`}
               >
-                {asignarPedidoMutation.isPending ? 'Asignando...' : 'Asignar Pedido'}
+                {isAssigning ? 'Asignando...' : 'Asignar Pedido'}
               </motion.button>
             </div>
           </motion.div>
