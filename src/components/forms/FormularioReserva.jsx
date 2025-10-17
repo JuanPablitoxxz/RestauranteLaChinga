@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
-import { XMarkIcon, CalendarDaysIcon, UserPlusIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, CalendarDaysIcon, UserPlusIcon, KeyIcon, ClockIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { supabase } from '../../lib/supabase'
 
 const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles = [] }) => {
   const [isLoading, setIsLoading] = useState(false)
+  const [credencialesGeneradas, setCredencialesGeneradas] = useState(null)
   
   const {
     register,
@@ -66,31 +68,100 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
         return
       }
 
-      // Generar credenciales temporales
-      const usuarioTemporal = `cliente_${Date.now()}`
+      // Generar credenciales temporales únicas
+      const timestamp = Date.now()
+      const usuarioTemporal = `cliente_${timestamp}`
       const passwordTemporal = Math.random().toString(36).slice(-8)
       
+      // Calcular fecha de expiración (24 horas después de la fecha de reserva)
+      const fechaExpiracion = new Date(fechaReserva)
+      fechaExpiracion.setDate(fechaExpiracion.getDate() + 1)
+      
       const reservaData = {
-        ...data,
+        fecha: data.fecha,
+        hora: data.hora,
+        duracion: parseInt(data.duracion),
+        personas: parseInt(data.personas),
+        mesa_id: data.mesa_id ? parseInt(data.mesa_id) : null,
+        cliente_nombre: data.cliente_nombre,
+        cliente_telefono: data.cliente_telefono,
+        cliente_email: data.cliente_email || null,
+        observaciones: data.observaciones || null,
         usuario_temporal: usuarioTemporal,
         password_temporal: passwordTemporal,
+        fecha_expiracion: fechaExpiracion.toISOString(),
         estado: 'confirmada',
         fecha_creacion: new Date().toISOString()
       }
 
-      // Aquí iría la llamada a la API para crear la reserva
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Guardar en Supabase
+      const { data: reservaInsertada, error } = await supabase
+        .from('reservas')
+        .insert([reservaData])
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error al crear reserva:', error)
+        toast.error('Error al crear la reserva en la base de datos')
+        return
+      }
+
+      // Crear usuario temporal en la tabla usuarios
+      const usuarioTemporalData = {
+        email: `${usuarioTemporal}@temporal.lachinga.com`,
+        password: passwordTemporal,
+        nombre: data.cliente_nombre,
+        rol: 'cliente',
+        telefono: data.cliente_telefono,
+        activo: true,
+        es_temporal: true,
+        fecha_expiracion: fechaExpiracion.toISOString(),
+        reserva_id: reservaInsertada.id,
+        fecha_creacion: new Date().toISOString()
+      }
+
+      const { error: errorUsuario } = await supabase
+        .from('usuarios')
+        .insert([usuarioTemporalData])
+
+      if (errorUsuario) {
+        console.error('Error al crear usuario temporal:', errorUsuario)
+        toast.error('Error al crear credenciales temporales')
+        return
+      }
+
+      // Mostrar credenciales generadas
+      setCredencialesGeneradas({
+        usuario: usuarioTemporal,
+        password: passwordTemporal,
+        fechaExpiracion: fechaExpiracion.toLocaleDateString('es-ES'),
+        reservaId: reservaInsertada.id
+      })
       
-      toast.success('Reserva creada exitosamente')
-      onReservaCreada?.(reservaData)
-      reset()
-      onClose()
+      toast.success('Reserva creada exitosamente con credenciales temporales')
+      onReservaCreada?.(reservaInsertada)
+      
     } catch (error) {
       toast.error('Error al crear la reserva')
       console.error('Error:', error)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const copiarCredenciales = (texto) => {
+    navigator.clipboard.writeText(texto).then(() => {
+      toast.success('Credenciales copiadas al portapapeles')
+    }).catch(() => {
+      toast.error('Error al copiar las credenciales')
+    })
+  }
+
+  const cerrarFormulario = () => {
+    setCredencialesGeneradas(null)
+    reset()
+    onClose()
   }
 
   if (!isOpen) return null
@@ -115,7 +186,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={cerrarFormulario}
             className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
           >
             <XMarkIcon className="h-6 w-6 text-neutral-600" />
@@ -328,7 +399,7 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
           <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={cerrarFormulario}
               className="px-4 py-2 text-neutral-600 hover:text-neutral-800 transition-colors"
             >
               Cancelar
@@ -352,6 +423,105 @@ const FormularioReserva = ({ isOpen, onClose, onReservaCreada, mesasDisponibles 
           </div>
         </form>
       </motion.div>
+
+      {/* Modal de Credenciales Generadas */}
+      {credencialesGeneradas && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md"
+          >
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-mexico-verde-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <KeyIcon className="h-8 w-8 text-mexico-verde-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+                  ¡Reserva Creada Exitosamente!
+                </h3>
+                <p className="text-neutral-600">
+                  Se han generado credenciales temporales para el cliente
+                </p>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="p-4 bg-mexico-verde-50 rounded-lg border border-mexico-verde-200">
+                  <h4 className="text-sm font-medium text-mexico-verde-800 mb-3">
+                    Credenciales de Acceso Temporal
+                  </h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-mexico-verde-700 mb-1">
+                        Usuario
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <code className="flex-1 bg-white px-3 py-2 rounded text-sm font-mono text-neutral-800 border">
+                          {credencialesGeneradas.usuario}
+                        </code>
+                        <button
+                          onClick={() => copiarCredenciales(credencialesGeneradas.usuario)}
+                          className="px-3 py-2 bg-mexico-verde-600 text-white rounded text-sm hover:bg-mexico-verde-700 transition-colors"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-mexico-verde-700 mb-1">
+                        Contraseña
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <code className="flex-1 bg-white px-3 py-2 rounded text-sm font-mono text-neutral-800 border">
+                          {credencialesGeneradas.password}
+                        </code>
+                        <button
+                          onClick={() => copiarCredenciales(credencialesGeneradas.password)}
+                          className="px-3 py-2 bg-mexico-verde-600 text-white rounded text-sm hover:bg-mexico-verde-700 transition-colors"
+                        >
+                          Copiar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex items-center space-x-2">
+                    <ClockIcon className="h-4 w-4 text-yellow-600" />
+                    <p className="text-sm text-yellow-800">
+                      <strong>Válidas hasta:</strong> {credencialesGeneradas.fechaExpiracion}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    <strong>ID de Reserva:</strong> #{credencialesGeneradas.reservaId}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => copiarCredenciales(`Usuario: ${credencialesGeneradas.usuario}\nContraseña: ${credencialesGeneradas.password}\nVálidas hasta: ${credencialesGeneradas.fechaExpiracion}`)}
+                  className="flex-1 bg-mexico-verde-600 text-white px-4 py-2 rounded-lg hover:bg-mexico-verde-700 transition-colors"
+                >
+                  Copiar Todo
+                </button>
+                <button
+                  onClick={cerrarFormulario}
+                  className="flex-1 bg-neutral-600 text-white px-4 py-2 rounded-lg hover:bg-neutral-700 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }

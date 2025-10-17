@@ -11,7 +11,11 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   ReceiptPercentIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  PrinterIcon,
+  DocumentTextIcon,
+  XMarkIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -23,6 +27,8 @@ const CobrosCajero = () => {
   const [busqueda, setBusqueda] = useState('')
   const [facturaSeleccionada, setFacturaSeleccionada] = useState(null)
   const [mostrarModalPago, setMostrarModalPago] = useState(false)
+  const [mostrarModalCancelacion, setMostrarModalCancelacion] = useState(false)
+  const [motivoCancelacion, setMotivoCancelacion] = useState('')
 
   // Obtener facturas
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
@@ -119,6 +125,307 @@ const CobrosCajero = () => {
       facturaId: facturaSeleccionada.id,
       metodoPago
     })
+  }
+
+  // Función para generar factura de cancelación profesional
+  const generarFacturaCancelacion = (factura) => {
+    const fechaActual = new Date()
+    const numeroCancelacion = `CANC-${Date.now()}`
+    
+    const facturaCancelacion = {
+      numero: numeroCancelacion,
+      fecha: fechaActual.toLocaleDateString('es-ES'),
+      hora: fechaActual.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      facturaOriginal: factura.id,
+      motivo: motivoCancelacion,
+      total: factura.total,
+      subtotal: factura.subtotal,
+      propina: factura.propina,
+      iva: factura.iva || 0,
+      mesa: factura.mesaId,
+      cajero: 'Cajero Actual', // Aquí se obtendría del contexto de usuario
+      items: factura.items || []
+    }
+
+    // Generar HTML para la factura de cancelación
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Factura de Cancelación - ${numeroCancelacion}</title>
+        <style>
+          body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+          }
+          .factura-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+          }
+          .header {
+            background: linear-gradient(135deg, #C62828, #2E7D32);
+            color: white;
+            padding: 20px;
+            text-align: center;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+          }
+          .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+          }
+          .content {
+            padding: 20px;
+          }
+          .section {
+            margin-bottom: 20px;
+          }
+          .section h3 {
+            color: #C62828;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            border-bottom: 2px solid #C62828;
+            padding-bottom: 5px;
+          }
+          .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+          }
+          .info-row strong {
+            color: #2E7D32;
+          }
+          .total-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+          }
+          .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+            color: #C62828;
+            margin-bottom: 10px;
+          }
+          .motivo {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 15px;
+          }
+          .motivo h4 {
+            margin: 0 0 5px 0;
+            color: #856404;
+            font-size: 14px;
+          }
+          .motivo p {
+            margin: 0;
+            color: #856404;
+            font-size: 13px;
+          }
+          .footer {
+            background: #2E7D32;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+          }
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+          }
+          .items-table th,
+          .items-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+          }
+          .items-table th {
+            background: #f8f9fa;
+            color: #2E7D32;
+            font-weight: bold;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="factura-container">
+          <div class="header">
+            <h1>🇲🇽 LA CHINGA</h1>
+            <p>Restaurante Mexicano Auténtico</p>
+            <p>FACTURA DE CANCELACIÓN</p>
+          </div>
+          
+          <div class="content">
+            <div class="section">
+              <h3>📋 Información de Cancelación</h3>
+              <div class="info-row">
+                <span>Número de Cancelación:</span>
+                <strong>${facturaCancelacion.numero}</strong>
+              </div>
+              <div class="info-row">
+                <span>Factura Original:</span>
+                <strong>#${facturaCancelacion.facturaOriginal}</strong>
+              </div>
+              <div class="info-row">
+                <span>Fecha:</span>
+                <strong>${facturaCancelacion.fecha}</strong>
+              </div>
+              <div class="info-row">
+                <span>Hora:</span>
+                <strong>${facturaCancelacion.hora}</strong>
+              </div>
+              <div class="info-row">
+                <span>Mesa:</span>
+                <strong>${facturaCancelacion.mesa}</strong>
+              </div>
+              <div class="info-row">
+                <span>Cajero:</span>
+                <strong>${facturaCancelacion.cajero}</strong>
+              </div>
+            </div>
+
+            ${facturaCancelacion.items.length > 0 ? `
+            <div class="section">
+              <h3>🍽️ Items Cancelados</h3>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Cant.</th>
+                    <th>Precio</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${facturaCancelacion.items.map(item => `
+                    <tr>
+                      <td>${item.nombre}</td>
+                      <td>${item.cantidad}</td>
+                      <td>$${item.precio.toFixed(2)}</td>
+                      <td>$${(item.precio * item.cantidad).toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
+
+            <div class="total-section">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>$${facturaCancelacion.subtotal.toFixed(2)}</span>
+              </div>
+              ${facturaCancelacion.iva > 0 ? `
+              <div class="total-row">
+                <span>IVA (16%):</span>
+                <span>$${facturaCancelacion.iva.toFixed(2)}</span>
+              </div>
+              ` : ''}
+              <div class="total-row">
+                <span>Propina:</span>
+                <span>$${facturaCancelacion.propina.toFixed(2)}</span>
+              </div>
+              <div class="total-row" style="border-top: 2px solid #C62828; padding-top: 10px;">
+                <span>TOTAL CANCELADO:</span>
+                <span>$${facturaCancelacion.total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="motivo">
+              <h4>📝 Motivo de Cancelación:</h4>
+              <p>${facturaCancelacion.motivo || 'No especificado'}</p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>¡Gracias por visitar La Chinga!</p>
+            <p>Este documento es válido como comprobante de cancelación</p>
+            <p>Generado el ${fechaActual.toLocaleString('es-ES')}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+
+    return { facturaCancelacion, htmlContent }
+  }
+
+  // Función para imprimir factura de cancelación
+  const imprimirFacturaCancelacion = (factura) => {
+    const { htmlContent } = generarFacturaCancelacion(factura)
+    
+    const ventanaImpresion = window.open('', '_blank')
+    ventanaImpresion.document.write(htmlContent)
+    ventanaImpresion.document.close()
+    
+    // Esperar a que se cargue el contenido y luego imprimir
+    ventanaImpresion.onload = () => {
+      ventanaImpresion.print()
+      ventanaImpresion.close()
+    }
+    
+    toast.success('Factura de cancelación generada')
+  }
+
+  // Función para descargar factura de cancelación como PDF
+  const descargarFacturaCancelacion = (factura) => {
+    const { htmlContent } = generarFacturaCancelacion(factura)
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `cancelacion-${factura.id}-${Date.now()}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    
+    toast.success('Factura de cancelación descargada')
+  }
+
+  // Función para cancelar factura
+  const cancelarFactura = async () => {
+    if (!facturaSeleccionada || !motivoCancelacion.trim()) {
+      toast.error('Por favor ingresa un motivo de cancelación')
+      return
+    }
+
+    try {
+      // Aquí se haría la llamada a la API para cancelar la factura
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Generar y mostrar la factura de cancelación
+      imprimirFacturaCancelacion(facturaSeleccionada)
+      
+      toast.success('Factura cancelada exitosamente')
+      setMostrarModalCancelacion(false)
+      setFacturaSeleccionada(null)
+      setMotivoCancelacion('')
+      
+      // Actualizar la lista de facturas
+      queryClient.invalidateQueries(['facturas'])
+    } catch (error) {
+      toast.error('Error al cancelar la factura')
+    }
   }
 
   const obtenerPedidoFactura = (factura) => {
@@ -360,35 +667,68 @@ const CobrosCajero = () => {
                 </div>
 
                 {/* Acciones */}
-                <div className="flex space-x-3">
+                <div className="flex flex-wrap gap-2">
                   {factura.estado === 'pendiente' && (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setFacturaSeleccionada(factura)
-                        setMostrarModalPago(true)
-                      }}
-                      className="btn-primary"
-                    >
-                      Procesar Pago
-                    </motion.button>
+                    <>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setFacturaSeleccionada(factura)
+                          setMostrarModalPago(true)
+                        }}
+                        className="btn-primary flex items-center space-x-2"
+                      >
+                        <CheckCircleIcon className="h-4 w-4" />
+                        <span>Procesar Pago</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setFacturaSeleccionada(factura)
+                          setMostrarModalCancelacion(true)
+                        }}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                        <span>Cancelar</span>
+                      </motion.button>
+                    </>
+                  )}
+                  
+                  {factura.estado === 'pagada' && (
+                    <>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => imprimirFacturaCancelacion(factura)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                      >
+                        <PrinterIcon className="h-4 w-4" />
+                        <span>Imprimir</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => descargarFacturaCancelacion(factura)}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                      >
+                        <ArrowDownTrayIcon className="h-4 w-4" />
+                        <span>Descargar</span>
+                      </motion.button>
+                    </>
                   )}
                   
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="btn-secondary"
+                    className="btn-secondary flex items-center space-x-2"
                   >
-                    Ver Detalles
-                  </motion.button>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="btn-secondary"
-                  >
-                    Imprimir Recibo
+                    <DocumentTextIcon className="h-4 w-4" />
+                    <span>Ver Detalles</span>
                   </motion.button>
                 </div>
               </motion.div>
@@ -479,6 +819,91 @@ const CobrosCajero = () => {
                 }`}
               >
                 {procesarPagoMutation.isPending ? 'Procesando...' : 'Confirmar Pago'}
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Modal de cancelación */}
+      {mostrarModalCancelacion && facturaSeleccionada && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setMostrarModalCancelacion(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-xl shadow-lg max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-red-600">
+                Cancelar Factura #{facturaSeleccionada.id}
+              </h3>
+              <button
+                onClick={() => setMostrarModalCancelacion(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex justify-between text-lg font-semibold text-red-800">
+                  <span>Total a cancelar:</span>
+                  <span>${facturaSeleccionada.total.toLocaleString()}</span>
+                </div>
+                <p className="text-sm text-red-600 mt-1">
+                  Mesa {facturaSeleccionada.mesaId}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Motivo de cancelación *
+                </label>
+                <textarea
+                  value={motivoCancelacion}
+                  onChange={(e) => setMotivoCancelacion(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                  placeholder="Describe el motivo de la cancelación..."
+                />
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  ⚠️ <strong>Importante:</strong> Esta acción generará una factura de cancelación profesional que se imprimirá automáticamente.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setMostrarModalCancelacion(false)}
+                className="flex-1 btn-secondary"
+              >
+                Cancelar
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={cancelarFactura}
+                disabled={!motivoCancelacion.trim()}
+                className={`flex-1 ${
+                  !motivoCancelacion.trim()
+                    ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                } px-4 py-2 rounded-lg transition-colors`}
+              >
+                Confirmar Cancelación
               </motion.button>
             </div>
           </motion.div>

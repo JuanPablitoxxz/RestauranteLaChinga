@@ -15,7 +15,7 @@ import { es } from 'date-fns/locale'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 
 const ReportesCajero = () => {
-  const [periodo, setPeriodo] = useState('hoy') // hoy, semana, mes
+  const [periodo, setPeriodo] = useState('hoy') // Solo reportes del día
   const [tipoReporte, setTipoReporte] = useState('ventas') // ventas, mesas, pedidos
 
   // Obtener datos
@@ -39,28 +39,10 @@ const ReportesCajero = () => {
 
   const obtenerRangoFechas = () => {
     const hoy = new Date()
-    
-    switch (periodo) {
-      case 'hoy':
-        return {
-          inicio: startOfDay(hoy),
-          fin: endOfDay(hoy)
-        }
-      case 'semana':
-        return {
-          inicio: startOfDay(subWeeks(hoy, 1)),
-          fin: endOfDay(hoy)
-        }
-      case 'mes':
-        return {
-          inicio: startOfDay(subMonths(hoy, 1)),
-          fin: endOfDay(hoy)
-        }
-      default:
-        return {
-          inicio: startOfDay(hoy),
-          fin: endOfDay(hoy)
-        }
+    // Solo reportes del día actual
+    return {
+      inicio: startOfDay(hoy),
+      fin: endOfDay(hoy)
     }
   }
 
@@ -96,35 +78,24 @@ const ReportesCajero = () => {
 
   const obtenerDatosGraficoVentas = () => {
     const datos = []
-    const dias = periodo === 'hoy' ? 24 : periodo === 'semana' ? 7 : 30
+    // Solo reportes por hora del día actual
+    const horas = 24
     
-    for (let i = dias - 1; i >= 0; i--) {
+    for (let i = horas - 1; i >= 0; i--) {
       const fecha = new Date()
-      if (periodo === 'hoy') {
-        fecha.setHours(fecha.getHours() - i)
-      } else if (periodo === 'semana') {
-        fecha.setDate(fecha.getDate() - i)
-      } else {
-        fecha.setDate(fecha.getDate() - i)
-      }
+      fecha.setHours(fecha.getHours() - i)
       
-      const facturasDelDia = facturasFiltradas.filter(f => {
+      const facturasDeLaHora = facturasFiltradas.filter(f => {
         const fechaFactura = new Date(f.fechaPago || f.fechaCreacion)
-        if (periodo === 'hoy') {
-          return fechaFactura.getHours() === fecha.getHours()
-        } else {
-          return fechaFactura.toDateString() === fecha.toDateString()
-        }
+        return fechaFactura.getHours() === fecha.getHours()
       })
       
-      const ventasDelDia = facturasDelDia.reduce((sum, f) => sum + f.total, 0)
+      const ventasDeLaHora = facturasDeLaHora.reduce((sum, f) => sum + f.total, 0)
       
       datos.push({
-        fecha: periodo === 'hoy' 
-          ? `${fecha.getHours()}:00`
-          : format(fecha, 'dd/MM', { locale: es }),
-        ventas: ventasDelDia,
-        facturas: facturasDelDia.length
+        fecha: `${fecha.getHours()}:00`,
+        ventas: ventasDeLaHora,
+        facturas: facturasDeLaHora.length
       })
     }
     
@@ -168,21 +139,236 @@ const ReportesCajero = () => {
   const datosMesas = obtenerDatosGraficoMesas()
 
   const exportarReporte = () => {
-    // Simular exportación
+    // Generar reporte del día en formato HTML profesional
+    const fechaActual = new Date()
     const datos = {
-      periodo,
+      fecha: fechaActual.toLocaleDateString('es-ES'),
       estadisticas,
       facturas: facturasFiltradas,
-      fechaGeneracion: new Date().toISOString()
+      datosVentas,
+      datosMetodosPago,
+      fechaGeneracion: fechaActual.toISOString()
     }
     
-    const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' })
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reporte del Día - La Chinga</title>
+        <style>
+          body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+          }
+          .reporte-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+          }
+          .header {
+            background: linear-gradient(135deg, #C62828, #2E7D32);
+            color: white;
+            padding: 30px;
+            text-align: center;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+          }
+          .header p {
+            margin: 5px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+          }
+          .content {
+            padding: 30px;
+          }
+          .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+          }
+          .stat-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #C62828;
+          }
+          .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #C62828;
+            margin-bottom: 5px;
+          }
+          .stat-label {
+            font-size: 14px;
+            color: #666;
+          }
+          .section {
+            margin-bottom: 30px;
+          }
+          .section h3 {
+            color: #C62828;
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            border-bottom: 2px solid #C62828;
+            padding-bottom: 5px;
+          }
+          .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+          }
+          .table th,
+          .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+          }
+          .table th {
+            background: #f8f9fa;
+            color: #2E7D32;
+            font-weight: bold;
+          }
+          .footer {
+            background: #2E7D32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="reporte-container">
+          <div class="header">
+            <h1>🇲🇽 LA CHINGA</h1>
+            <p>Restaurante Mexicano Auténtico</p>
+            <p>REPORTE DEL DÍA - ${datos.fecha}</p>
+          </div>
+          
+          <div class="content">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-value">$${datos.estadisticas.totalVentas.toLocaleString()}</div>
+                <div class="stat-label">Total Ventas</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${datos.estadisticas.totalFacturas}</div>
+                <div class="stat-label">Total Facturas</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">$${Math.round(datos.estadisticas.promedioTicket).toLocaleString()}</div>
+                <div class="stat-label">Ticket Promedio</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">$${datos.estadisticas.totalPropinas.toLocaleString()}</div>
+                <div class="stat-label">Total Propinas</div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>📊 Resumen de Ventas por Hora</h3>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th>Ventas</th>
+                    <th>Facturas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${datos.datosVentas.filter(d => d.ventas > 0).map(d => `
+                    <tr>
+                      <td>${d.fecha}</td>
+                      <td>$${d.ventas.toLocaleString()}</td>
+                      <td>${d.facturas}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="section">
+              <h3>💳 Ventas por Método de Pago</h3>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Método</th>
+                    <th>Total</th>
+                    <th>Porcentaje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${datos.datosMetodosPago.map(d => `
+                    <tr>
+                      <td>${d.name}</td>
+                      <td>$${d.value.toLocaleString()}</td>
+                      <td>${((d.value / datos.estadisticas.totalVentas) * 100).toFixed(1)}%</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="section">
+              <h3>🧾 Facturas del Día</h3>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Mesa</th>
+                    <th>Total</th>
+                    <th>Método</th>
+                    <th>Hora</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${datos.facturas.map(f => `
+                    <tr>
+                      <td>#${f.id}</td>
+                      <td>Mesa ${f.mesaId}</td>
+                      <td>$${f.total.toLocaleString()}</td>
+                      <td>${f.metodoPago}</td>
+                      <td>${new Date(f.fechaCreacion).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td>${f.estado}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>Reporte generado el ${fechaActual.toLocaleString('es-ES')}</p>
+            <p>¡Gracias por usar el sistema de La Chinga!</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+    
+    const blob = new Blob([htmlContent], { type: 'text/html' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `reporte-${periodo}-${format(new Date(), 'yyyy-MM-dd')}.json`
+    a.download = `reporte-dia-${format(new Date(), 'yyyy-MM-dd')}.html`
     a.click()
     URL.revokeObjectURL(url)
+    
+    toast.success('Reporte del día exportado exitosamente')
   }
 
   return (
@@ -193,11 +379,11 @@ const ReportesCajero = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
-        <h1 className="text-3xl font-bold text-primary-800 mb-2">
-          Reportes y Análisis
+        <h1 className="text-3xl font-bold text-mexico-rojo-600 mb-2">
+          Reportes del Día
         </h1>
         <p className="text-neutral-600">
-          Análisis de ventas y rendimiento del restaurante
+          Análisis de ventas y rendimiento del día actual
         </p>
       </motion.div>
 
@@ -209,27 +395,16 @@ const ReportesCajero = () => {
         className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6"
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Selector de período */}
-          <div className="flex space-x-2">
-            {[
-              { value: 'hoy', label: 'Hoy' },
-              { value: 'semana', label: 'Última semana' },
-              { value: 'mes', label: 'Último mes' }
-            ].map((periodoOption) => (
-              <motion.button
-                key={periodoOption.value}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setPeriodo(periodoOption.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  periodo === periodoOption.value
-                    ? 'bg-primary-100 text-primary-800'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                }`}
-              >
-                {periodoOption.label}
-              </motion.button>
-            ))}
+          {/* Información del día */}
+          <div className="flex items-center space-x-4">
+            <div className="bg-mexico-verde-100 text-mexico-verde-800 px-4 py-2 rounded-lg">
+              <span className="font-medium">
+                📅 {format(new Date(), 'dd/MM/yyyy', { locale: es })} - {format(new Date(), 'EEEE', { locale: es })}
+              </span>
+            </div>
+            <div className="text-sm text-neutral-600">
+              Reporte en tiempo real del día actual
+            </div>
           </div>
 
           {/* Botón exportar */}
@@ -237,10 +412,10 @@ const ReportesCajero = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={exportarReporte}
-            className="btn-secondary flex items-center space-x-2"
+            className="bg-mexico-rojo-600 text-white px-6 py-2 rounded-lg hover:bg-mexico-rojo-700 transition-colors flex items-center space-x-2"
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
-            <span>Exportar</span>
+            <span>Exportar Reporte</span>
           </motion.button>
         </div>
       </motion.div>
@@ -311,7 +486,7 @@ const ReportesCajero = () => {
           className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6"
         >
           <h3 className="text-lg font-semibold text-neutral-800 mb-4">
-            Ventas por {periodo === 'hoy' ? 'Hora' : 'Día'}
+            Ventas por Hora del Día
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

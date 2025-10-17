@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { 
   CalendarDaysIcon,
   PlusIcon,
@@ -12,12 +12,15 @@ import {
   ClockIcon,
   UserIcon,
   PhoneIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import FormularioReserva from '../../components/forms/FormularioReserva'
 import toast from 'react-hot-toast'
+import { supabase } from '../../lib/supabase'
 
 const ReservasCajero = () => {
+  const queryClient = useQueryClient()
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [filtro, setFiltro] = useState('todas')
   const [reservaSeleccionada, setReservaSeleccionada] = useState(null)
@@ -84,13 +87,37 @@ const ReservasCajero = () => {
 
   const { data: reservas, isLoading } = useQuery({
     queryKey: ['reservas'],
-    queryFn: () => reservasMock,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('reservas')
+        .select('*')
+        .order('fecha', { ascending: true })
+      
+      if (error) {
+        console.error('Error al obtener reservas:', error)
+        return reservasMock // Fallback a datos mock
+      }
+      
+      return data || []
+    },
     staleTime: 5 * 60 * 1000
   })
 
   const { data: mesas } = useQuery({
     queryKey: ['mesas'],
-    queryFn: () => mesasMock,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mesas')
+        .select('*')
+        .order('numero', { ascending: true })
+      
+      if (error) {
+        console.error('Error al obtener mesas:', error)
+        return mesasMock // Fallback a datos mock
+      }
+      
+      return data || []
+    },
     staleTime: 5 * 60 * 1000
   })
 
@@ -143,6 +170,48 @@ const ReservasCajero = () => {
     }).catch(() => {
       toast.error('Error al copiar las credenciales')
     })
+  }
+
+  const actualizarReserva = async (reservaId, nuevosDatos) => {
+    try {
+      const { error } = await supabase
+        .from('reservas')
+        .update(nuevosDatos)
+        .eq('id', reservaId)
+
+      if (error) {
+        console.error('Error al actualizar reserva:', error)
+        toast.error('Error al actualizar la reserva')
+        return
+      }
+
+      toast.success('Reserva actualizada exitosamente')
+      queryClient.invalidateQueries(['reservas'])
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al actualizar la reserva')
+    }
+  }
+
+  const cancelarReserva = async (reservaId) => {
+    try {
+      const { error } = await supabase
+        .from('reservas')
+        .update({ estado: 'cancelada' })
+        .eq('id', reservaId)
+
+      if (error) {
+        console.error('Error al cancelar reserva:', error)
+        toast.error('Error al cancelar la reserva')
+        return
+      }
+
+      toast.success('Reserva cancelada exitosamente')
+      queryClient.invalidateQueries(['reservas'])
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al cancelar la reserva')
+    }
   }
 
   if (isLoading) {
@@ -440,9 +509,8 @@ const ReservasCajero = () => {
         isOpen={mostrarFormulario}
         onClose={() => setMostrarFormulario(false)}
         onReservaCreada={(nuevaReserva) => {
-          // Aquí se actualizaría la lista de reservas
           console.log('Reserva creada:', nuevaReserva)
-          toast.success('Reserva creada exitosamente')
+          queryClient.invalidateQueries(['reservas'])
         }}
         mesasDisponibles={mesas}
       />
