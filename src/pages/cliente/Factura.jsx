@@ -137,6 +137,18 @@ const Factura = () => {
       
       console.log('📤 Enviando factura al cajero:', facturaParaCajero)
       
+      // Guardar directamente en localStorage como respaldo
+      const facturasExistentes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      facturasExistentes.push(facturaParaCajero)
+      localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasExistentes))
+      
+      // También guardar para reportes
+      const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+      facturasReportes.push(facturaParaCajero)
+      localStorage.setItem('facturasParaReportes', JSON.stringify(facturasReportes))
+      
+      console.log('✅ Factura guardada directamente en localStorage:', facturasExistentes.length, 'facturas totales')
+      
       // Usar el hook para agregar la factura
       const exito = agregarFactura(facturaParaCajero)
       
@@ -383,6 +395,26 @@ const Factura = () => {
         >
           <ShareIcon className="h-4 w-4" />
           <span>Compartir</span>
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => {
+            console.log('🔍 DEBUG CLIENTE - Verificando localStorage:')
+            const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+            const facturasReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+            
+            console.log('🔍 Facturas pendientes:', facturasPendientes)
+            console.log('🔍 Facturas reportes:', facturasReportes)
+            console.log('🔍 Total facturas:', facturasPendientes.length + facturasReportes.length)
+            
+            alert(`🔍 DEBUG CLIENTE:\n\nFacturas pendientes: ${facturasPendientes.length}\nFacturas reportes: ${facturasReportes.length}\nTotal: ${facturasPendientes.length + facturasReportes.length}`)
+          }}
+          className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2"
+        >
+          <span>🔍</span>
+          <span>Debug Cliente</span>
         </motion.button>
       </motion.div>
 
