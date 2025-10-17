@@ -28,17 +28,30 @@ BEGIN
         
         -- Agregar columnas que no existen
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'email') THEN
-            ALTER TABLE usuarios ADD COLUMN email VARCHAR(255) UNIQUE NOT NULL;
+            ALTER TABLE usuarios ADD COLUMN email VARCHAR(255);
+            -- Actualizar registros existentes con email por defecto
+            UPDATE usuarios SET email = 'usuario' || id || '@lachinga.com' WHERE email IS NULL;
+            -- Ahora hacer la columna NOT NULL y UNIQUE
+            ALTER TABLE usuarios ALTER COLUMN email SET NOT NULL;
+            ALTER TABLE usuarios ADD CONSTRAINT usuarios_email_unique UNIQUE (email);
             RAISE NOTICE 'Columna email agregada';
         END IF;
         
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'password') THEN
-            ALTER TABLE usuarios ADD COLUMN password VARCHAR(255) NOT NULL;
+            ALTER TABLE usuarios ADD COLUMN password VARCHAR(255);
+            -- Actualizar registros existentes con contraseña por defecto
+            UPDATE usuarios SET password = 'temp123' WHERE password IS NULL;
+            -- Ahora hacer la columna NOT NULL
+            ALTER TABLE usuarios ALTER COLUMN password SET NOT NULL;
             RAISE NOTICE 'Columna password agregada';
         END IF;
         
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'usuarios' AND column_name = 'nombre') THEN
-            ALTER TABLE usuarios ADD COLUMN nombre VARCHAR(255) NOT NULL;
+            ALTER TABLE usuarios ADD COLUMN nombre VARCHAR(255);
+            -- Actualizar registros existentes con nombre por defecto
+            UPDATE usuarios SET nombre = 'Usuario ' || id WHERE nombre IS NULL;
+            -- Ahora hacer la columna NOT NULL
+            ALTER TABLE usuarios ALTER COLUMN nombre SET NOT NULL;
             RAISE NOTICE 'Columna nombre agregada';
         END IF;
         
