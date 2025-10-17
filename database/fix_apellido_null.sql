@@ -67,7 +67,7 @@ SELECT
     apellido,
     rol
 FROM usuarios 
-ORDER BY fecha_creacion DESC
+ORDER BY id DESC
 LIMIT 5;
 
 -- 7. Intentar insertar un usuario de prueba para verificar que funciona
@@ -82,8 +82,7 @@ BEGIN
         apellido,
         rol, 
         activo, 
-        es_temporal,
-        fecha_creacion
+        es_temporal
     ) VALUES (
         'test@lachinga.com',
         'test_hash_123',
@@ -92,8 +91,7 @@ BEGIN
         'Prueba',
         'cliente',
         TRUE,
-        FALSE,
-        NOW()
+        FALSE
     );
     
     RAISE NOTICE 'Usuario de prueba insertado correctamente';
