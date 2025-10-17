@@ -20,88 +20,161 @@ export const useAuthStore = create(
         try {
           console.log('🔍 Intentando login con:', { email, rol })
           
-          // Buscar usuario en la tabla usuarios
-          const { data: usuarioData, error: userError } = await supabase
-            .from('usuarios')
-            .select('*')
-            .eq('email', email)
-            .single()
-
-          if (userError) {
-            console.error('Error al buscar usuario:', userError)
-            set({ isLoading: false })
-            return { success: false, error: `Error al buscar usuario: ${userError.message}` }
-          }
-
-          if (!usuarioData) {
-            console.error('Usuario no encontrado:', email)
-            set({ isLoading: false })
-            return { success: false, error: 'Usuario no encontrado en la base de datos' }
-          }
-
-          // Verificar contraseña (comparar con password_hash)
-          const passwordValida = usuarioData.password_hash === password
-          
-          if (!passwordValida) {
-            console.error('Contraseña incorrecta para:', email)
-            set({ isLoading: false })
-            return { success: false, error: 'Contraseña incorrecta' }
-          }
-
-          // Verificar que el rol coincida
-          if (usuarioData.rol !== rol) {
-            set({ isLoading: false })
-            return { success: false, error: 'Rol incorrecto' }
-          }
-
-          // Verificar si el usuario está activo
-          if (!usuarioData.activo) {
-            set({ isLoading: false })
-            return { success: false, error: 'Usuario inactivo' }
-          }
-
-          // Verificar si es usuario temporal y no ha expirado
-          if (usuarioData.es_temporal && usuarioData.fecha_expiracion) {
-            const fechaExpiracion = new Date(usuarioData.fecha_expiracion)
-            const ahora = new Date()
-            
-            if (ahora > fechaExpiracion) {
-              set({ isLoading: false })
-              return { success: false, error: 'Credenciales temporales expiradas' }
+          // TEMPORAL: Usar datos mock para usuarios de prueba mientras se arregla Supabase
+          const usuariosMock = {
+            'admin@lachinga.com': {
+              password: 'admin123',
+              usuario: {
+                id: 'admin-001',
+                email: 'admin@lachinga.com',
+                nombre: 'Administrador',
+                apellido: 'La Chinga',
+                rol: 'admin',
+                telefono: '+52 55 1234 5678',
+                turno: 'mañana',
+                activo: true,
+                es_temporal: false
+              }
+            },
+            'mesero@lachinga.com': {
+              password: 'mesero123',
+              usuario: {
+                id: 'mesero-001',
+                email: 'mesero@lachinga.com',
+                nombre: 'Pedro',
+                apellido: 'González',
+                rol: 'mesero',
+                telefono: '+52 55 2345 6789',
+                turno: 'mañana',
+                activo: true,
+                es_temporal: false
+              }
+            },
+            'cajero@lachinga.com': {
+              password: 'cajero123',
+              usuario: {
+                id: 'cajero-001',
+                email: 'cajero@lachinga.com',
+                nombre: 'María',
+                apellido: 'López',
+                rol: 'cajero',
+                telefono: '+52 55 3456 7890',
+                turno: 'mañana',
+                activo: true,
+                es_temporal: false
+              }
+            },
+            'cocina@lachinga.com': {
+              password: 'cocina123',
+              usuario: {
+                id: 'cocina-001',
+                email: 'cocina@lachinga.com',
+                nombre: 'Roberto',
+                apellido: 'Martínez',
+                rol: 'cocina',
+                telefono: '+52 55 4567 8901',
+                turno: 'mañana',
+                activo: true,
+                es_temporal: false
+              }
+            },
+            'cliente@lachinga.com': {
+              password: 'cliente123',
+              usuario: {
+                id: 'cliente-001',
+                email: 'cliente@lachinga.com',
+                nombre: 'Ana',
+                apellido: 'García',
+                rol: 'cliente',
+                telefono: '+52 55 5678 9012',
+                turno: 'mañana',
+                activo: true,
+                es_temporal: false
+              }
             }
           }
-
-          const usuario = {
-            id: usuarioData.id,
-            email: usuarioData.email,
-            nombre: usuarioData.nombre,
-            apellido: usuarioData.apellido,
-            rol: usuarioData.rol,
-            turno: usuarioData.turno,
-            activo: usuarioData.activo,
-            es_temporal: usuarioData.es_temporal,
-            avatar: `https://ui-avatars.com/api/?name=${usuarioData.nombre}&background=c62828&color=fff`
+          
+          // Verificar si es un usuario mock
+          const usuarioMockData = usuariosMock[email]
+          if (usuarioMockData && usuarioMockData.password === password && usuarioMockData.usuario.rol === rol) {
+            console.log(`✅ Login exitoso con datos mock para ${rol}`)
+            
+            set({
+              usuario: usuarioMockData.usuario,
+              token: `mock-token-${rol}`,
+              rol: rol,
+              turno: usuarioMockData.usuario.turno,
+              isAuthenticated: true,
+              isLoading: false
+            })
+            
+            return { success: true, usuario: usuarioMockData.usuario }
           }
           
-          set({
-            usuario,
-            token: `mock_token_${Date.now()}`, // Token mock para usuarios temporales
-            rol: usuarioData.rol,
-            isAuthenticated: true,
-            isLoading: false
-          })
+          // Intentar con Supabase para usuarios reales
+          try {
+            const { data: usuarioData, error: userError } = await supabase
+              .from('usuarios')
+              .select('*')
+              .eq('email', email)
+              .single()
 
-          console.log('✅ Login exitoso:', usuario)
-          return { success: true, usuario }
+            if (userError) {
+              console.error('Error al buscar usuario en Supabase:', userError)
+              set({ isLoading: false })
+              return { success: false, error: `Error al buscar usuario: ${userError.message}` }
+            }
+
+            if (!usuarioData) {
+              console.error('Usuario no encontrado en Supabase:', email)
+              set({ isLoading: false })
+              return { success: false, error: 'Usuario no encontrado en la base de datos' }
+            }
+
+            // Verificar contraseña (comparar con password_hash)
+            const passwordValida = usuarioData.password_hash === password
+            
+            if (!passwordValida) {
+              console.error('Contraseña incorrecta para:', email)
+              set({ isLoading: false })
+              return { success: false, error: 'Contraseña incorrecta' }
+            }
+
+            // Verificar que el rol coincida
+            if (usuarioData.rol !== rol) {
+              set({ isLoading: false })
+              return { success: false, error: 'Rol incorrecto' }
+            }
+
+            // Login exitoso con Supabase
+            console.log(`✅ Login exitoso con Supabase para ${rol}`)
+            
+            set({
+              usuario: usuarioData,
+              token: `supabase-token-${usuarioData.id}`,
+              rol: usuarioData.rol,
+              turno: usuarioData.turno || 'mañana',
+              isAuthenticated: true,
+              isLoading: false
+            })
+            
+            return { success: true, usuario: usuarioData }
+            
+          } catch (supabaseError) {
+            console.error('Error de conexión con Supabase:', supabaseError)
+            set({ isLoading: false })
+            return { success: false, error: 'Error de conexión con la base de datos' }
+          }
+          
         } catch (error) {
           console.error('Error en login:', error)
           set({ isLoading: false })
-          return { success: false, error: error.message }
+          return { success: false, error: 'Error interno del sistema' }
         }
       },
 
-      logout: async () => {
-        console.log('🚪 Cerrando sesión...')
+      logout: () => {
+        console.log('🔪 Cerrando sesión...')
         set({
           usuario: null,
           token: null,
@@ -112,35 +185,20 @@ export const useAuthStore = create(
         })
       },
 
+      // Verificar si el usuario está autenticado
+      verificarAutenticacion: () => {
+        const { isAuthenticated, usuario } = get()
+        return isAuthenticated && usuario !== null
+      },
+
+      // Obtener información del usuario actual
+      obtenerUsuario: () => {
+        return get().usuario
+      },
+
+      // Cambiar turno
       cambiarTurno: (nuevoTurno) => {
         set({ turno: nuevoTurno })
-      },
-
-      actualizarUsuario: (datosUsuario) => {
-        const { usuario } = get()
-        if (usuario) {
-          set({
-            usuario: { ...usuario, ...datosUsuario }
-          })
-        }
-      },
-
-      // Verificaciones de permisos
-      tienePermiso: (permiso) => {
-        const { rol } = get()
-        const permisos = {
-          cliente: ['ver_carta', 'hacer_pedido', 'reservar_mesa', 'ver_factura'],
-          mesero: ['ver_mesas', 'gestionar_pedidos', 'ver_notificaciones'],
-          cajero: ['gestionar_cobros', 'ver_reportes', 'gestionar_reservas'],
-          admin: ['ver_dashboard', 'gestionar_usuarios', 'gestionar_mesas', 'gestionar_cartas', 'ver_alertas'],
-          cocina: ['ver_pedidos', 'gestionar_cocina']
-        }
-        return permisos[rol]?.includes(permiso) || false
-      },
-
-      esRol: (rolRequerido) => {
-        const { rol } = get()
-        return rol === rolRequerido
       }
     }),
     {
