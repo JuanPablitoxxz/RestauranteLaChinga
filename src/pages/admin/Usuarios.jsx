@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usuariosMock } from '../../data/mockData'
 import toast from 'react-hot-toast'
+import { supabase } from '../../lib/supabase'
 import { 
   UserPlusIcon,
   PencilIcon,
@@ -27,7 +28,19 @@ const UsuariosAdmin = () => {
   // Obtener usuarios
   const { data: usuarios, isLoading: isLoadingUsuarios } = useQuery({
     queryKey: ['usuarios'],
-    queryFn: () => usuariosMock,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .order('fecha_creacion', { ascending: false })
+      
+      if (error) {
+        console.error('Error al obtener usuarios:', error)
+        return usuariosMock // Fallback a datos mock
+      }
+      
+      return data || []
+    },
     staleTime: 5 * 60 * 1000
   })
 
@@ -45,8 +58,16 @@ const UsuariosAdmin = () => {
   // Mutación para eliminar usuario
   const eliminarUsuarioMutation = useMutation({
     mutationFn: async (usuarioId) => {
-      // Simular llamada a API
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { error } = await supabase
+        .from('usuarios')
+        .delete()
+        .eq('id', usuarioId)
+
+      if (error) {
+        console.error('Error al eliminar usuario:', error)
+        throw error
+      }
+
       return { success: true }
     },
     onSuccess: () => {

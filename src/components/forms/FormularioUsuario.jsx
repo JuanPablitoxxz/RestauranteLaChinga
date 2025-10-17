@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { XMarkIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { supabase } from '../../lib/supabase'
 
 const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -34,12 +35,34 @@ const FormularioUsuario = ({ isOpen, onClose, onUsuarioCreado }) => {
     setIsLoading(true)
     
     try {
-      // Aquí iría la llamada a la API para crear el usuario
-      // Por ahora simulamos la creación
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      // Preparar datos para Supabase
+      const usuarioData = {
+        email: data.email,
+        password: data.password,
+        nombre: `${data.nombre} ${data.apellido}`,
+        rol: data.rol,
+        telefono: data.telefono || null,
+        turno: data.turno || null,
+        activo: true,
+        es_temporal: false,
+        fecha_creacion: new Date().toISOString()
+      }
+
+      // Insertar usuario en Supabase
+      const { data: usuarioInsertado, error } = await supabase
+        .from('usuarios')
+        .insert([usuarioData])
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error al crear usuario:', error)
+        toast.error('Error al crear el usuario en la base de datos')
+        return
+      }
+
       toast.success(`Usuario ${data.nombre} ${data.apellido} creado exitosamente`)
-      onUsuarioCreado?.(data)
+      onUsuarioCreado?.(usuarioInsertado)
       reset()
       onClose()
     } catch (error) {
