@@ -21,8 +21,29 @@ const ReportesCajero = () => {
   // Obtener datos
   const { data: facturas } = useQuery({
     queryKey: ['facturas'],
-    queryFn: () => facturasMock,
-    staleTime: 5 * 60 * 1000
+    queryFn: () => {
+      console.log('📊 Obteniendo facturas para reportes...')
+      
+      // Combinar facturas mock con facturas enviadas por clientes
+      const facturasEnviadasPorClientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      const facturasParaReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+      
+      console.log('📤 Facturas enviadas por clientes:', facturasEnviadasPorClientes.length)
+      console.log('📊 Facturas para reportes:', facturasParaReportes.length)
+      
+      // Combinar todas las facturas
+      const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes, ...facturasParaReportes]
+      
+      // Eliminar duplicados por ID
+      const facturasUnicas = facturasCombinadas.filter((factura, index, self) => 
+        index === self.findIndex(f => f.id === factura.id)
+      )
+      
+      console.log('✅ Total facturas únicas para reportes:', facturasUnicas.length)
+      return facturasUnicas
+    },
+    staleTime: 30 * 1000, // Reducir tiempo de caché
+    refetchInterval: 10 * 1000 // Refrescar cada 10 segundos
   })
 
   const { data: pedidos } = useQuery({
@@ -50,7 +71,7 @@ const ReportesCajero = () => {
 
   const filtrarDatosPorFecha = (datos) => {
     return datos?.filter(item => {
-      const fechaItem = new Date(item.fechaCreacion || item.fechaPago)
+      const fechaItem = new Date(item.fechaCreacion || item.fechaPago || item.fecha_envio)
       return fechaItem >= inicio && fechaItem <= fin
     }) || []
   }
@@ -590,24 +611,36 @@ const ReportesCajero = () => {
             <tbody>
               {facturasFiltradas.slice(0, 10).map((factura) => (
                 <tr key={factura.id} className="border-b border-neutral-100 hover:bg-neutral-50">
-                  <td className="py-3 px-4 text-sm text-neutral-800">#{factura.id}</td>
-                  <td className="py-3 px-4 text-sm text-neutral-600">Mesa {factura.mesaId}</td>
-                  <td className="py-3 px-4 text-sm font-medium text-neutral-800">
-                    ${factura.total.toLocaleString()}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-neutral-600 capitalize">
-                    {factura.metodoPago}
+                  <td className="py-3 px-4 text-sm text-neutral-800">
+                    #{factura.numero || factura.id}
+                    {factura.enviada_por_cliente && (
+                      <span className="ml-2 text-blue-600 text-xs">📤</span>
+                    )}
                   </td>
                   <td className="py-3 px-4 text-sm text-neutral-600">
-                    {format(new Date(factura.fechaCreacion), 'dd/MM HH:mm', { locale: es })}
+                    Mesa {factura.mesa || factura.mesaId}
+                    {factura.cliente && (
+                      <div className="text-xs text-neutral-500">{factura.cliente}</div>
+                    )}
+                  </td>
+                  <td className="py-3 px-4 text-sm font-medium text-neutral-800">
+                    ${(factura.total || 0).toLocaleString()}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-neutral-600 capitalize">
+                    {factura.metodo_pago || factura.metodoPago || 'N/A'}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-neutral-600">
+                    {format(new Date(factura.fechaCreacion || factura.fecha_envio), 'dd/MM HH:mm', { locale: es })}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                       factura.estado === 'pagada' 
                         ? 'bg-green-100 text-green-800'
+                        : factura.estado === 'pendiente_cobro'
+                        ? 'bg-blue-100 text-blue-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {factura.estado}
+                      {factura.estado === 'pendiente_cobro' ? 'Enviada por Cliente' : factura.estado}
                     </span>
                   </td>
                 </tr>

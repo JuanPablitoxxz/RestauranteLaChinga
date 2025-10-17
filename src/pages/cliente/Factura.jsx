@@ -107,9 +107,10 @@ const Factura = () => {
       // Simular envío al cajero
       await new Promise(resolve => setTimeout(resolve, 1500))
       
-      // Aquí se guardaría en la base de datos para que aparezca en la sección de cobros del cajero
+      // Crear factura para el cajero con ID único
+      const facturaId = Date.now()
       const facturaParaCajero = {
-        id: Date.now(),
+        id: facturaId,
         numero: facturaData.numero,
         cliente: facturaData.cliente,
         mesa: facturaData.mesa,
@@ -124,16 +125,34 @@ const Factura = () => {
         metodo_pago: facturaData.metodo_pago,
         estado: 'pendiente_cobro',
         enviada_por_cliente: true,
-        fecha_envio: new Date().toISOString()
+        fecha_envio: new Date().toISOString(),
+        fechaCreacion: new Date().toISOString(),
+        mesaId: facturaData.mesa,
+        pedidoId: facturaId // Usar el mismo ID como pedido
       }
       
-      // Guardar en localStorage para simular base de datos
+      console.log('📤 Enviando factura al cajero:', facturaParaCajero)
+      
+      // Guardar en localStorage con múltiples claves para asegurar persistencia
       const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
       facturasPendientes.push(facturaParaCajero)
       localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasPendientes))
       
+      // También guardar en una clave adicional para reportes
+      const facturasParaReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+      facturasParaReportes.push({
+        ...facturaParaCajero,
+        tipo: 'enviada_por_cliente',
+        procesada: false
+      })
+      localStorage.setItem('facturasParaReportes', JSON.stringify(facturasParaReportes))
+      
+      console.log('✅ Factura guardada en localStorage:', facturasPendientes.length, 'facturas totales')
+      console.log('📊 Factura guardada para reportes:', facturasParaReportes.length, 'facturas totales')
+      
       toast.success('Factura enviada al cajero exitosamente')
     } catch (error) {
+      console.error('❌ Error al enviar factura:', error)
       toast.error('Error al enviar la factura al cajero')
     } finally {
       setIsEnviandoCajero(false)

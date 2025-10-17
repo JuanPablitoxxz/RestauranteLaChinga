@@ -35,18 +35,28 @@ const CobrosCajero = () => {
   const { data: facturas, isLoading: isLoadingFacturas } = useQuery({
     queryKey: ['facturas'],
     queryFn: () => {
-      // Combinar facturas mock con facturas enviadas por clientes
+      console.log('🔍 Obteniendo facturas para cajero...')
+      
+      // Obtener facturas enviadas por clientes
       const facturasEnviadasPorClientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      console.log('📤 Facturas enviadas por clientes:', facturasEnviadasPorClientes)
+      
+      // Combinar facturas mock con facturas enviadas por clientes
       const facturasCombinadas = [...facturasMock, ...facturasEnviadasPorClientes]
+      console.log('📋 Total facturas combinadas:', facturasCombinadas.length)
       
       // Ordenar por fecha de creación (más recientes primero)
-      return facturasCombinadas.sort((a, b) => {
+      const facturasOrdenadas = facturasCombinadas.sort((a, b) => {
         const fechaA = new Date(a.fechaCreacion || a.fecha_envio || Date.now())
         const fechaB = new Date(b.fechaCreacion || b.fecha_envio || Date.now())
         return fechaB - fechaA
       })
+      
+      console.log('✅ Facturas ordenadas:', facturasOrdenadas)
+      return facturasOrdenadas
     },
-    staleTime: 5 * 60 * 1000
+    staleTime: 30 * 1000, // Reducir tiempo de caché para actualizaciones más frecuentes
+    refetchInterval: 10 * 1000 // Refrescar cada 10 segundos
   })
 
   // Obtener pedidos
@@ -71,6 +81,35 @@ const CobrosCajero = () => {
     mutationFn: async ({ facturaId, metodoPago }) => {
       // Simular llamada a API
       await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Actualizar factura en localStorage
+      const facturasPendientes = JSON.parse(localStorage.getItem('facturasPendientesCajero') || '[]')
+      const facturaIndex = facturasPendientes.findIndex(f => f.id === facturaId)
+      
+      if (facturaIndex !== -1) {
+        // Marcar como pagada
+        facturasPendientes[facturaIndex].estado = 'pagada'
+        facturasPendientes[facturaIndex].fechaPago = new Date().toISOString()
+        facturasPendientes[facturaIndex].metodoPago = metodoPago
+        
+        // Actualizar localStorage
+        localStorage.setItem('facturasPendientesCajero', JSON.stringify(facturasPendientes))
+        
+        // También actualizar en reportes
+        const facturasParaReportes = JSON.parse(localStorage.getItem('facturasParaReportes') || '[]')
+        const reporteIndex = facturasParaReportes.findIndex(f => f.id === facturaId)
+        
+        if (reporteIndex !== -1) {
+          facturasParaReportes[reporteIndex].estado = 'pagada'
+          facturasParaReportes[reporteIndex].procesada = true
+          facturasParaReportes[reporteIndex].fechaPago = new Date().toISOString()
+          facturasParaReportes[reporteIndex].metodoPago = metodoPago
+          localStorage.setItem('facturasParaReportes', JSON.stringify(facturasParaReportes))
+        }
+        
+        console.log('✅ Factura procesada y actualizada en localStorage')
+      }
+      
       return { success: true, reciboId: Date.now() }
     },
     onSuccess: () => {
