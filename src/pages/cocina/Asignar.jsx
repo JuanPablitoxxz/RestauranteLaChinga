@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useCocinaPedidos } from '../../hooks/useCocinaPedidos'
 import toast from 'react-hot-toast'
 import { 
   UserGroupIcon,
@@ -11,7 +10,8 @@ import {
   MinusIcon,
   TrashIcon,
   MapPinIcon,
-  UserIcon
+  UserIcon,
+  PlayIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -20,33 +20,117 @@ const AsignarCocina = () => {
   const [cocineroSeleccionado, setCocineroSeleccionado] = useState(null)
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null)
   const [mostrarModal, setMostrarModal] = useState(false)
+  const [pedidos, setPedidos] = useState([
+    {
+      id: 1,
+      numero: 'PED-001',
+      mesa: 2,
+      mesero: 'Pedro González',
+      cliente: 'María García',
+      items: [
+        { nombre: 'Tacos al Pastor', cantidad: 3, precio: 45, observaciones: 'Sin cebolla' },
+        { nombre: 'Quesadilla de Pollo', cantidad: 1, precio: 35, observaciones: 'Extra queso' },
+        { nombre: 'Coca Cola', cantidad: 2, precio: 25, observaciones: 'Sin hielo' }
+      ],
+      estado: 'pendiente',
+      prioridad: 'normal',
+      tiempoEstimado: 20,
+      fechaCreacion: new Date(Date.now() - 300000).toISOString(), // 5 min atrás
+      cocineroAsignado: null,
+      observaciones: 'Cliente alérgico a mariscos'
+    },
+    {
+      id: 2,
+      numero: 'PED-002',
+      mesa: 4,
+      mesero: 'Ana López',
+      cliente: 'Carlos Ruiz',
+      items: [
+        { nombre: 'Burrito de Carne', cantidad: 1, precio: 55, observaciones: 'Picante' },
+        { nombre: 'Ensalada César', cantidad: 1, precio: 40, observaciones: 'Sin crutones' }
+      ],
+      estado: 'en_preparacion',
+      prioridad: 'alta',
+      tiempoEstimado: 15,
+      fechaCreacion: new Date(Date.now() - 600000).toISOString(), // 10 min atrás
+      cocineroAsignado: 'Chef Roberto',
+      observaciones: 'Urgente - cliente con prisa'
+    },
+    {
+      id: 3,
+      numero: 'PED-003',
+      mesa: 1,
+      mesero: 'Luis Martínez',
+      cliente: 'Sofia Herrera',
+      items: [
+        { nombre: 'Chiles Rellenos', cantidad: 2, precio: 65, observaciones: 'Sin picante' },
+        { nombre: 'Arroz Blanco', cantidad: 1, precio: 20, observaciones: 'Extra arroz' }
+      ],
+      estado: 'listo',
+      prioridad: 'normal',
+      tiempoEstimado: 25,
+      fechaCreacion: new Date(Date.now() - 1800000).toISOString(), // 30 min atrás
+      cocineroAsignado: 'Chef María',
+      observaciones: 'Listo para entregar'
+    },
+    {
+      id: 4,
+      numero: 'PED-004',
+      mesa: 6,
+      mesero: 'Pedro González',
+      cliente: 'Roberto Silva',
+      items: [
+        { nombre: 'Pozole', cantidad: 1, precio: 50, observaciones: 'Extra carne' },
+        { nombre: 'Tostadas', cantidad: 3, precio: 30, observaciones: 'Bien tostadas' }
+      ],
+      estado: 'pendiente',
+      prioridad: 'alta',
+      tiempoEstimado: 30,
+      fechaCreacion: new Date(Date.now() - 120000).toISOString(), // 2 min atrás
+      cocineroAsignado: null,
+      observaciones: 'Cliente VIP'
+    }
+  ])
 
-  // Hook personalizado para gestión de pedidos de cocina
-  const {
-    pedidos,
-    cocineros,
-    isLoadingPedidos,
-    isLoadingCocineros,
-    asignarPedido,
-    desasignarPedido,
-    isAssigning,
-    isUnassigning
-  } = useCocinaPedidos()
+  const cocineros = [
+    { id: 1, nombre: 'Chef Roberto', especialidad: 'Platos Principales', activo: true, pedidosAsignados: 1 },
+    { id: 2, nombre: 'Chef María', especialidad: 'Entradas y Ensaladas', activo: true, pedidosAsignados: 1 },
+    { id: 3, nombre: 'Chef Carlos', especialidad: 'Postres', activo: true, pedidosAsignados: 0 },
+    { id: 4, nombre: 'Chef Ana', especialidad: 'Bebidas y Cocteles', activo: false, pedidosAsignados: 0 }
+  ]
 
-  const pedidosPendientes = pedidos?.filter(p => p.estado === 'pendiente') || []
-  const pedidosEnPreparacion = pedidos?.filter(p => p.estado === 'en_preparacion') || []
+  const pedidosPendientes = pedidos.filter(p => p.estado === 'pendiente')
+  const pedidosEnPreparacion = pedidos.filter(p => p.estado === 'en_preparacion')
 
-  const asignarPedidoHandler = (pedidoId, cocineroId) => {
-    asignarPedido.mutate({ pedidoId, cocineroId })
+  const asignarPedido = (pedidoId, cocineroId) => {
+    const cocinero = cocineros.find(c => c.id === cocineroId)
+    if (!cocinero) return
+
+    setPedidos(prevPedidos => 
+      prevPedidos.map(pedido => 
+        pedido.id === pedidoId 
+          ? { ...pedido, cocineroAsignado: cocinero.nombre, estado: 'en_preparacion' }
+          : pedido
+      )
+    )
+    
+    toast.success(`Pedido asignado a ${cocinero.nombre}`)
     setMostrarModal(false)
     setPedidoSeleccionado(null)
     setCocineroSeleccionado(null)
   }
 
-  const desasignarPedidoHandler = (pedidoId) => {
-    desasignarPedido.mutate({ pedidoId })
+  const desasignarPedido = (pedidoId) => {
+    setPedidos(prevPedidos => 
+      prevPedidos.map(pedido => 
+        pedido.id === pedidoId 
+          ? { ...pedido, cocineroAsignado: null, estado: 'pendiente' }
+          : pedido
+      )
+    )
+    
+    toast.success('Pedido desasignado')
   }
-
 
   const calcularTiempoEspera = (fechaCreacion) => {
     const ahora = new Date()
@@ -63,44 +147,40 @@ const AsignarCocina = () => {
     }
   }
 
-  const obtenerPrioridad = (fechaCreacion) => {
-    const minutos = Math.floor((Date.now() - new Date(fechaCreacion).getTime()) / 60000)
-    
-    if (minutos > 30) return { nivel: 'Alta', color: 'text-red-600', bgColor: 'bg-red-100' }
-    if (minutos > 15) return { nivel: 'Media', color: 'text-yellow-600', bgColor: 'bg-yellow-100' }
-    return { nivel: 'Baja', color: 'text-green-600', bgColor: 'bg-green-100' }
+  const obtenerPrioridad = (prioridad) => {
+    switch (prioridad) {
+      case 'alta':
+        return { 
+          texto: 'Alta', 
+          color: 'text-red-600', 
+          bgColor: 'bg-red-100' 
+        }
+      case 'normal':
+        return { 
+          texto: 'Normal', 
+          color: 'text-blue-600', 
+          bgColor: 'bg-blue-100' 
+        }
+      case 'baja':
+        return { 
+          texto: 'Baja', 
+          color: 'text-green-600', 
+          bgColor: 'bg-green-100' 
+        }
+      default:
+        return { 
+          texto: 'Normal', 
+          color: 'text-blue-600', 
+          bgColor: 'bg-blue-100' 
+        }
+    }
   }
 
-  const obtenerEspecialidadRecomendada = (pedido) => {
-    const items = pedido.items || []
-    const categorias = items.map(item => {
-      // Simular categorización basada en el nombre del plato
-      if (item.nombre.toLowerCase().includes('ensalada') || item.nombre.toLowerCase().includes('entrada')) {
-        return 'Entradas y Ensaladas'
-      } else if (item.nombre.toLowerCase().includes('postre') || item.nombre.toLowerCase().includes('tiramisu')) {
-        return 'Postres'
-      } else if (item.nombre.toLowerCase().includes('bebida') || item.nombre.toLowerCase().includes('café')) {
-        return 'Bebidas y Cocteles'
-      } else {
-        return 'Platos Principales'
-      }
-    })
-    
-    // Retornar la categoría más común
-    const categoriaMasComun = categorias.reduce((a, b, i, arr) =>
-      arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b
-    )
-    
-    return categoriaMasComun
-  }
-
-  if (isLoadingPedidos) {
-    return (
-      <div className="space-y-6">
-        <div className="loading-skeleton h-8 w-64"></div>
-        <div className="loading-skeleton h-64 w-full"></div>
-      </div>
-    )
+  const estadisticas = {
+    pedidosPendientes: pedidosPendientes.length,
+    pedidosEnPreparacion: pedidosEnPreparacion.length,
+    cocinerosActivos: cocineros.filter(c => c.activo).length,
+    cocinerosDisponibles: cocineros.filter(c => c.activo && c.pedidosAsignados < 3).length
   }
 
   return (
@@ -112,317 +192,256 @@ const AsignarCocina = () => {
         className="text-center"
       >
         <h1 className="text-3xl font-bold text-primary-800 mb-2">
-          Asignación de Pedidos
+          Asignación de Cocineros
         </h1>
         <p className="text-neutral-600">
-          Asigna pedidos a los cocineros según su especialidad
+          Gestiona la asignación de pedidos a cocineros
         </p>
       </motion.div>
 
+      {/* Estadísticas */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-4 gap-4"
+      >
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 mb-2">
+            {estadisticas.pedidosPendientes}
+          </div>
+          <p className="text-sm text-neutral-600">Pendientes</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-2">
+            {estadisticas.pedidosEnPreparacion}
+          </div>
+          <p className="text-sm text-neutral-600">En Preparación</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 mb-2">
+            {estadisticas.cocinerosActivos}
+          </div>
+          <p className="text-sm text-neutral-600">Cocineros Activos</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 text-center">
+          <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800 mb-2">
+            {estadisticas.cocinerosDisponibles}
+          </div>
+          <p className="text-sm text-neutral-600">Disponibles</p>
+        </div>
+      </motion.div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Lista de cocineros */}
+        {/* Pedidos Pendientes */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-4"
-        >
-          <h2 className="text-xl font-semibold text-neutral-800">
-            Cocineros Disponibles
-          </h2>
-          
-          <div className="space-y-3">
-            {cocineros.map((cocinero, index) => (
-              <motion.div
-                key={cocinero.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                  cocineroSeleccionado?.id === cocinero.id
-                    ? 'border-primary-500 bg-primary-50'
-                    : cocinero.activo
-                    ? 'border-neutral-200 hover:border-neutral-300'
-                    : 'border-neutral-200 bg-neutral-100 opacity-60'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      cocinero.activo ? 'bg-green-100' : 'bg-neutral-200'
-                    }`}>
-                      <UserGroupIcon className={`h-5 w-5 ${
-                        cocinero.activo ? 'text-green-600' : 'text-neutral-500'
-                      }`} />
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-semibold text-neutral-800">
-                        {cocinero.nombre}
-                      </h3>
-                      <p className="text-sm text-neutral-600">
-                        {cocinero.especialidad}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <div className="text-sm text-neutral-600">
-                      {cocinero.pedidosAsignados} pedidos
-                    </div>
-                    <div className={`text-xs px-2 py-1 rounded-full ${
-                      cocinero.activo 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-neutral-100 text-neutral-600'
-                    }`}>
-                      {cocinero.activo ? 'Activo' : 'Inactivo'}
-                    </div>
-                  </div>
-                </div>
-                
-                {cocinero.activo && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setCocineroSeleccionado(cocinero)}
-                    className={`w-full mt-3 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      cocineroSeleccionado?.id === cocinero.id
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-primary-100 text-primary-800 hover:bg-primary-200'
-                    }`}
-                  >
-                    {cocineroSeleccionado?.id === cocinero.id ? 'Seleccionado' : 'Seleccionar'}
-                  </motion.button>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Lista de pedidos pendientes */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className="space-y-4"
+          className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6"
         >
-          <h2 className="text-xl font-semibold text-neutral-800">
+          <h2 className="text-xl font-semibold text-neutral-800 mb-4 flex items-center">
+            <ClockIcon className="h-5 w-5 text-yellow-600 mr-2" />
             Pedidos Pendientes ({pedidosPendientes.length})
           </h2>
           
-          {pedidosPendientes.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-neutral-200">
-              <CheckCircleIcon className="h-16 w-16 text-green-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-800 mb-2">
-                ¡Excelente trabajo!
-              </h3>
-              <p className="text-neutral-600">
-                No hay pedidos pendientes por asignar
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {pedidosPendientes.map((pedido, index) => {
-                const prioridad = obtenerPrioridad(pedido.fechaCreacion)
-                const tiempoEspera = calcularTiempoEspera(pedido.fechaCreacion)
-                const especialidadRecomendada = obtenerEspecialidadRecomendada(pedido)
+          <div className="space-y-4">
+            {pedidosPendientes.length === 0 ? (
+              <div className="text-center py-8">
+                <ClockIcon className="h-12 w-12 text-neutral-400 mx-auto mb-2" />
+                <p className="text-neutral-600">No hay pedidos pendientes</p>
+              </div>
+            ) : (
+              pedidosPendientes.map((pedido) => {
+                const prioridadInfo = obtenerPrioridad(pedido.prioridad)
                 
                 return (
-                  <motion.div
-                    key={pedido.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                      pedidoSeleccionado?.id === pedido.id
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-neutral-200 hover:border-neutral-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                          <span className="text-sm font-bold text-primary-800">
-                            #{pedido.id}
-                          </span>
-                        </div>
-                        
-                        <div>
-                          <h3 className="font-semibold text-neutral-800">
-                            Pedido #{pedido.id}
-                          </h3>
-                          <p className="text-sm text-neutral-600">
-                            Mesa {pedido.mesaId} • {tiempoEspera} de espera
-                          </p>
+                  <div key={pedido.id} className="border border-neutral-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-neutral-800">{pedido.numero}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-neutral-600 mt-1">
+                          <div className="flex items-center space-x-1">
+                            <MapPinIcon className="h-4 w-4" />
+                            <span>Mesa {pedido.mesa}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <UserIcon className="h-4 w-4" />
+                            <span>{pedido.mesero}</span>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${prioridad.bgColor} ${prioridad.color}`}>
-                        {prioridad.nivel}
-                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${prioridadInfo.bgColor} ${prioridadInfo.color}`}>
+                        {prioridadInfo.texto}
+                      </span>
                     </div>
                     
-                    <div className="space-y-2 text-sm text-neutral-600">
-                      <div className="flex justify-between">
-                        <span>Items:</span>
-                        <span>{pedido.items?.length || 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Tiempo estimado:</span>
-                        <span>{pedido.tiempoEstimado} min</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Especialidad recomendada:</span>
-                        <span className="text-primary-600 font-medium">
-                          {especialidadRecomendada}
-                        </span>
-                      </div>
+                    <div className="text-sm text-neutral-600 mb-3">
+                      <span>Tiempo espera: {calcularTiempoEspera(pedido.fechaCreacion)}</span>
+                      <span className="ml-4">Tiempo estimado: {pedido.tiempoEstimado} min</span>
                     </div>
                     
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                    <div className="text-sm text-neutral-600 mb-3">
+                      <strong>Items:</strong> {pedido.items.map(item => `${item.nombre} x${item.cantidad}`).join(', ')}
+                    </div>
+                    
+                    {pedido.observaciones && (
+                      <div className="text-sm text-neutral-600 mb-3">
+                        <strong>Observaciones:</strong> {pedido.observaciones}
+                      </div>
+                    )}
+                    
+                    <button
                       onClick={() => {
                         setPedidoSeleccionado(pedido)
                         setMostrarModal(true)
                       }}
-                      className={`w-full mt-3 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        pedidoSeleccionado?.id === pedido.id
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-primary-100 text-primary-800 hover:bg-primary-200'
-                      }`}
+                      className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
                     >
-                      {pedidoSeleccionado?.id === pedido.id ? 'Seleccionado' : 'Asignar'}
-                    </motion.button>
-                  </motion.div>
+                      Asignar Cocinero
+                    </button>
+                  </div>
                 )
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
+        </motion.div>
+
+        {/* Pedidos En Preparación */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6"
+        >
+          <h2 className="text-xl font-semibold text-neutral-800 mb-4 flex items-center">
+            <PlayIcon className="h-5 w-5 text-blue-600 mr-2" />
+            Pedidos En Preparación ({pedidosEnPreparacion.length})
+          </h2>
+          
+          <div className="space-y-4">
+            {pedidosEnPreparacion.length === 0 ? (
+              <div className="text-center py-8">
+                <PlayIcon className="h-12 w-12 text-neutral-400 mx-auto mb-2" />
+                <p className="text-neutral-600">No hay pedidos en preparación</p>
+              </div>
+            ) : (
+              pedidosEnPreparacion.map((pedido) => {
+                const prioridadInfo = obtenerPrioridad(pedido.prioridad)
+                
+                return (
+                  <div key={pedido.id} className="border border-neutral-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-neutral-800">{pedido.numero}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-neutral-600 mt-1">
+                          <div className="flex items-center space-x-1">
+                            <MapPinIcon className="h-4 w-4" />
+                            <span>Mesa {pedido.mesa}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <UserIcon className="h-4 w-4" />
+                            <span>{pedido.mesero}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${prioridadInfo.bgColor} ${prioridadInfo.color}`}>
+                        {prioridadInfo.texto}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm text-neutral-600 mb-3">
+                      <span>Tiempo espera: {calcularTiempoEspera(pedido.fechaCreacion)}</span>
+                      <span className="ml-4">Tiempo estimado: {pedido.tiempoEstimado} min</span>
+                    </div>
+                    
+                    <div className="text-sm text-neutral-600 mb-3">
+                      <strong>Cocinero:</strong> {pedido.cocineroAsignado}
+                    </div>
+                    
+                    <div className="text-sm text-neutral-600 mb-3">
+                      <strong>Items:</strong> {pedido.items.map(item => `${item.nombre} x${item.cantidad}`).join(', ')}
+                    </div>
+                    
+                    {pedido.observaciones && (
+                      <div className="text-sm text-neutral-600 mb-3">
+                        <strong>Observaciones:</strong> {pedido.observaciones}
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={() => desasignarPedido(pedido.id)}
+                      className="w-full px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                    >
+                      Desasignar
+                    </button>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </motion.div>
       </div>
 
-      {/* Pedidos en preparación */}
-      {pedidosEnPreparacion.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6"
-        >
-          <h2 className="text-xl font-semibold text-neutral-800 mb-4">
-            Pedidos en Preparación ({pedidosEnPreparacion.length})
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {pedidosEnPreparacion.map((pedido, index) => (
-              <motion.div
-                key={pedido.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className="p-4 bg-blue-50 rounded-lg border border-blue-200"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-neutral-800">
-                    Pedido #{pedido.id}
-                  </h3>
-                  <div className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                    En Preparación
-                  </div>
-                </div>
-                
-                <div className="space-y-1 text-sm text-neutral-600">
-                  <p>Mesa {pedido.mesaId}</p>
-                  <p>{pedido.items?.length || 0} items</p>
-                  <p>Tiempo estimado: {pedido.tiempoEstimado} min</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Modal de asignación */}
-      {mostrarModal && pedidoSeleccionado && (
+      {/* Modal de Asignación */}
+      {mostrarModal && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setMostrarModal(false)}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-lg max-w-md w-full p-6"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
           >
-            <h3 className="text-xl font-semibold text-neutral-800 mb-4">
-              Asignar Pedido #{pedidoSeleccionado.id}
+            <h3 className="text-lg font-semibold text-neutral-800 mb-4">
+              Asignar Cocinero a {pedidoSeleccionado?.numero}
             </h3>
-
-            <div className="space-y-4 mb-6">
-              <div className="p-4 bg-neutral-50 rounded-lg">
-                <h4 className="font-medium text-neutral-800 mb-2">Detalles del Pedido</h4>
-                <div className="space-y-1 text-sm text-neutral-600">
-                  <p>Mesa: {pedidoSeleccionado.mesaId}</p>
-                  <p>Items: {pedidoSeleccionado.items?.length || 0}</p>
-                  <p>Tiempo estimado: {pedidoSeleccionado.tiempoEstimado} min</p>
-                  <p>Total: ${pedidoSeleccionado.total.toLocaleString()}</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Seleccionar Cocinero
-                </label>
-                <div className="space-y-2">
-                  {cocineros.filter(c => c.activo).map((cocinero) => (
-                    <motion.button
-                      key={cocinero.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setCocineroSeleccionado(cocinero)}
-                      className={`w-full p-3 rounded-lg border-2 text-left transition-all duration-200 ${
-                        cocineroSeleccionado?.id === cocinero.id
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
-                    >
-                      <div className="font-medium text-neutral-800">{cocinero.nombre}</div>
-                      <div className="text-sm text-neutral-600">{cocinero.especialidad}</div>
-                      <div className="text-xs text-neutral-500">
-                        {cocinero.pedidosAsignados} pedidos asignados
-                      </div>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
+            
+            <div className="space-y-3 mb-6">
+              {cocineros.filter(c => c.activo).map((cocinero) => (
+                <button
+                  key={cocinero.id}
+                  onClick={() => setCocineroSeleccionado(cocinero)}
+                  className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
+                    cocineroSeleccionado?.id === cocinero.id
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-neutral-200 hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="font-medium text-neutral-800">{cocinero.nombre}</div>
+                  <div className="text-sm text-neutral-600">{cocinero.especialidad}</div>
+                  <div className="text-sm text-neutral-500">
+                    Pedidos asignados: {cocinero.pedidosAsignados}
+                  </div>
+                </button>
+              ))}
             </div>
-
+            
             <div className="flex space-x-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setMostrarModal(false)}
-                className="flex-1 btn-secondary"
+              <button
+                onClick={() => {
+                  setMostrarModal(false)
+                  setPedidoSeleccionado(null)
+                  setCocineroSeleccionado(null)
+                }}
+                className="flex-1 px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
               >
                 Cancelar
-              </motion.button>
+              </button>
               
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => asignarPedidoHandler(pedidoSeleccionado.id, cocineroSeleccionado.id)}
-                disabled={!cocineroSeleccionado || isAssigning}
-                className={`flex-1 ${
-                  !cocineroSeleccionado || isAssigning
-                    ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
-                    : 'btn-primary'
+              <button
+                onClick={() => asignarPedido(pedidoSeleccionado.id, cocineroSeleccionado.id)}
+                disabled={!cocineroSeleccionado}
+                className={`flex-1 px-4 py-2 rounded-lg text-white font-medium transition-colors ${
+                  !cocineroSeleccionado
+                    ? 'bg-neutral-300 cursor-not-allowed'
+                    : 'bg-primary-600 hover:bg-primary-700'
                 }`}
               >
-                {isAssigning ? 'Asignando...' : 'Asignar Pedido'}
-              </motion.button>
+                Asignar
+              </button>
             </div>
           </motion.div>
         </motion.div>
